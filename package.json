@@ -1,5 +1,5 @@
 {
-  "name": "bip47",
+  "name": "bip47-js",
   "version": "0.1.0",
   "description": "A set of utilities for working with BIP47 and bitcoinjs-lib",
   "main": "test/index.js",
@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@code.samourai.io:dojo/bip47.git"
+    "url": "git+ssh://git@code.samourai.io:dojo/bip47-js.git"
   },
   "author": "Katana Cryptographic Ltd.",
   "license": "AGPL-3.0-only",
-  "homepage": "https://code.samourai.io/dojo/bip47",
+  "homepage": "https://code.samourai.io/dojo/bip47-js",
   "dependencies": {
     "bitcoinjs-lib": "5.1.4",
     "bip32": "2.0.6",
