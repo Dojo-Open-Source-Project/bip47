@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { networks, payments } = require('bitcoinjs-lib');
-const { p2pkh } = payments;
+const { networks, getP2pkhAddress } = require('./utils');
 const { fromPublicKey } = require('bip32');
 const { encode, decode } = require('bs58check');
 
@@ -57,10 +56,7 @@ class PaymentCode {
 
   getNotificationAddress() {
     const child = this.derive(0);
-    return p2pkh({
-      pubkey: child.publicKey,
-      network: this.network
-    }).address;
+    return getP2pkhAddress(child.publicKey, this.network);
   }
 }
 
