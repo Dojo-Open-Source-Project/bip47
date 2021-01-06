@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bitcoinjs = require('bitcoinjs-lib');
-const bip32 = require('bip32');
-const bs58check = require('bs58check');
-const p2pkh = bitcoinjs.payments.p2pkh;
-const networks = bitcoinjs.networks;
+const { networks, payments } = require('bitcoinjs-lib');
+const { p2pkh } = payments;
+const { fromPublicKey } = require('bip32');
+const { encode, decode } = require('bs58check');
 
 
 const PC_VERSION = 0x47;
@@ -23,7 +22,7 @@ class PaymentCode {
 
     this.buf = buf;
     this.network = network;
-    this.root = bip32.fromPublicKey(this.pubKey, this.chainCode, this.network);
+    this.root = fromPublicKey(this.pubKey, this.chainCode, this.network);
   }
 
   get features() {
@@ -45,7 +44,7 @@ class PaymentCode {
   toBase58() {
     const version = Buffer.from([PC_VERSION]);
     const buf = Buffer.concat([version, this.buf]);
-    return bs58check.encode(buf);
+    return encode(buf);
   }
 
   derive(index) {
@@ -67,7 +66,7 @@ class PaymentCode {
 
 
 function fromBase58(inString, network) {
-  const buf = bs58check.decode(inString);
+  const buf = decode(inString);
 
   const version = buf.slice(0, 1);
   if (version[0] !== PC_VERSION)
