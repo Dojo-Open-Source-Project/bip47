@@ -2,6 +2,8 @@
 
 const assert = require('assert')
 const bip47 = require('../src')
+const utils = bip47.utils
+
 
 /**
  * Test vectors
@@ -9,14 +11,29 @@ const bip47 = require('../src')
 const PC_1 = {
   pcBase58: 'PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA',
   notifAddr: '1JDdmqFLhpzcUwPeinhJbUPw4Co3aWLyzW',
+  notifPrivkey: '8d6a8ecd8ee5e0042ad0cb56e3a971c760b5145c3917a8e7beaf0ed92d7a520c',
   notifPubKey: '0353883a146a23f988e0f381a9507cbdb3e3130cd81b3ce26daf2af088724ce683'
 };
 
 const PC_2 = {
   pcBase58: 'PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97',
   notifAddr: '1ChvUUvht2hUQufHBXF8NgLhW8SwE2ecGV',
+  notifPrivkey: '04448fd1be0c9c13a5ca0b530e464b619dc091b299b98c5cab9978b32b4a1b8b',
   notifPubKey: '024ce8e3b04ea205ff49f529950616c3db615b1e37753858cc60c1ce64d17e2ad8'
 };
+
+const PC_2_PAYMENT_ADDR = [
+  '141fi7TY3h936vRUKh1qfUZr8rSBuYbVBK',
+  '12u3Uued2fuko2nY4SoSFGCoGLCBUGPkk6',
+  '1FsBVhT5dQutGwaPePTYMe5qvYqqjxyftc',
+  '1CZAmrbKL6fJ7wUxb99aETwXhcGeG3CpeA',
+  '1KQvRShk6NqPfpr4Ehd53XUhpemBXtJPTL',
+  '1KsLV2F47JAe6f8RtwzfqhjVa8mZEnTM7t',
+  '1DdK9TknVwvBrJe7urqFmaxEtGF2TMWxzD',
+  '16DpovNuhQJH7JUSZQFLBQgQYS4QB9Wy8e',
+  '17qK2RPGZMDcci2BLQ6Ry2PDGJErrNojT5',
+  '1GxfdfP286uE24qLZ9YRP3EWk2urqXgC4s'
+]
 
 const PC_3 = {
   pcBase58: 'QM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA',
@@ -83,6 +100,41 @@ describe('payment-code', function() {
         const pc2 = bip47.fromBase58(PC_2.pcBase58);
         const notifAddr2 = pc2.getNotificationAddress();
         assert(notifAddr2 == PC_2.notifAddr);
+      } catch(e) {
+        assert(false);
+      }
+    });
+  });
+
+  describe('PaymentCode.derivePaymentPublicKey()', function() {
+    it('should successfully derive public keys for payments', function() {
+      try {
+        const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
+        const pc2 = bip47.fromBase58(PC_2.pcBase58);
+        for (let i=0; i<10; i++) {
+          const pubkeyPayment = pc2.derivePaymentPublicKey(privkey1, i);
+          const addrPayment = utils.getP2pkhAddress(pubkeyPayment, utils.networks.bitcoin);
+          if (addrPayment !== PC_2_PAYMENT_ADDR[i])
+            assert(false);
+        }
+        assert(true);
+      } catch(e) {
+        assert(false);
+      }
+    });
+  });
+
+  describe('PaymentCode.getPaymentAddress()', function() {
+    it('should successfully derive P2PKH addresses for payments', function() {
+      try {
+        const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
+        const pc2 = bip47.fromBase58(PC_2.pcBase58);
+        for (let i=0; i<10; i++) {
+          const addrPayment = pc2.getPaymentAddress(privkey1, i);
+          if (addrPayment !== PC_2_PAYMENT_ADDR[i])
+            assert(false);
+        }
+        assert(true);
       } catch(e) {
         assert(false);
       }
