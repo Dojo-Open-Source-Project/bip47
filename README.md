@@ -9,10 +9,14 @@ A set of utilities for working with BIP47 and bitcoinjs-lib.
 ```
 const bip47 = require('bip47-js');
 
-const b58PCode = 'PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA';
+const b58PCode = 'PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97';
 
 const pcode = bip47.fromBase58(b58PCode);
 const notifAddr = pcode.getNotificationAddress();
+
+const myPrivKey0 = Buffer.from('8d6a8ecd8ee5e0042ad0cb56e3a971c760b5145c3917a8e7beaf0ed92d7a520c', 'hex');
+const paymentAddr1 = pcode.getPaymentAddress(myPrivKey0, 1);
+const paymentAddr2 = pcode.getPaymentAddress(myPrivKey0, 2);
 ```
 
 ### Testnet
@@ -22,7 +26,7 @@ const bip47 = require('bip47-js');
 const networks = bip47.utils.networks;
 
 
-const b58PCode = 'PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA';
+const b58PCode = 'PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97';
 
 const pcode = bip47.fromBase58(b58PCode, networks.testnet);
 const notifAddr = pcode.getNotificationAddress();
@@ -41,7 +45,7 @@ The recommended method of using this library and bitcoinjs-lib in your browser i
   </head>
   <body>
     <script type="text/javascript">
-      const pcBase58 = 'PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA';
+      const pcBase58 = 'PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97';
       const pcode = bip47.fromBase58(pcBase58);
       const notifAddr = pcode.getNotificationAddress();
       console.log(notifAddr);

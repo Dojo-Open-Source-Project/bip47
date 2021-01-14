@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { networks, getP2pkhAddress } = require('./utils');
+const ecc = require('tiny-secp256k1');
+const { networks, getP2pkhAddress, sha256 } = require('./utils');
 const { fromPublicKey } = require('bip32');
 const { encode, decode } = require('bs58check');
 
@@ -57,6 +58,30 @@ class PaymentCode {
   getNotificationAddress() {
     const child = this.derive(0);
     return getP2pkhAddress(child.publicKey, this.network);
+  }
+
+  derivePaymentPublicKey(a, idx) {
+    if (!ecc.isPrivate(a))
+      throw new TypeError('Invalid private key');
+
+    const B = this.derive(idx).publicKey;
+
+    if (!ecc.isPoint(B))
+      throw new TypeError('Invalid derived public key');
+
+    const S = ecc.pointMultiply(B, a);
+    const Sx = S.slice(1, 33);
+    const s = sha256(Sx);
+
+    if (!ecc.isPrivate(s))
+      throw new TypeError('Invalid shared secret');
+
+    return ecc.pointAdd(B, ecc.pointFromScalar(s));
+  }
+
+  getPaymentAddress(a, idx) {
+    const pubkey = this.derivePaymentPublicKey(a, idx);
+    return getP2pkhAddress(pubkey, this.network);
   }
 }
 
