@@ -1,6 +1,6 @@
 {
   "name": "bip47-js",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A set of utilities for working with BIP47 and bitcoinjs-lib",
   "main": "src/index.js",
   "scripts": {
