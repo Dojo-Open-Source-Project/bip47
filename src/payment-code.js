@@ -26,9 +26,11 @@ class PaymentCode {
   }
 
   static fromSeed(bSeed, id, network) {
-    var reserved = Buffer.alloc(13, 0);
+    network = network || networks.bitcoin;
+    const reserved = Buffer.alloc(13, 0);
     const root = fromSeed(bSeed);
-    const root_bip47 = root.derivePath(`m/47'/0'/${id}'`);
+    const coinType = (network.pubKeyHash == networks.bitcoin.pubKeyHash) ? '0' : '1';
+    const root_bip47 = root.derivePath(`m/47'/${coinType}'/${id}'`);
 
     let pc = Buffer.from('0100', 'hex'); // version + options
     pc = Buffer.concat([pc, root_bip47.publicKey]);

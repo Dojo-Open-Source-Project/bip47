@@ -83,6 +83,7 @@ describe('payment-code', function() {
         const pc_b58 = pc.toBase58();
         assert(pc_b58 == PC_2.pcBase58);
       } catch(e) {
+        console.log(e)
         assert(false);
       }
     });
