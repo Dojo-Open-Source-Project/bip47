@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecc = require('tiny-secp256k1');
 const { networks, getP2pkhAddress, sha256 } = require('./utils');
-const { fromPublicKey } = require('bip32');
+const { fromPublicKey, fromSeed } = require('bip32');
 const { encode, decode } = require('bs58check');
 
 
@@ -23,6 +23,23 @@ class PaymentCode {
     this.buf = buf;
     this.network = network;
     this.root = fromPublicKey(this.pubKey, this.chainCode, this.network);
+  }
+
+  static fromSeed(bSeed, id, network) {
+    var reserved = Buffer.alloc(13, 0);
+    const root = fromSeed(bSeed);
+    const root_bip47 = root.derivePath(`m/47'/0'/${id}'`);
+
+    let pc = Buffer.from('0100', 'hex'); // version + options
+    pc = Buffer.concat([pc, root_bip47.publicKey]);
+    pc = Buffer.concat([pc, root_bip47.chainCode]);
+    if (pc.length !== 67)
+      throw new TypeError('Missing or wrong publicKey or chainCode');
+    pc = Buffer.concat([pc, reserved]); // reserved bytes
+
+    const pcode = new PaymentCode(pc, network);
+    pcode.root = root_bip47; // store the privkey
+    return pcode;
   }
 
   get features() {
@@ -47,6 +64,10 @@ class PaymentCode {
     return encode(buf);
   }
 
+  _hasPrivKeys() {
+    return this.root.privateKey != null;
+  }
+
   derive(index) {
     return this.root.derive(index);
   }
@@ -61,15 +82,31 @@ class PaymentCode {
   }
 
   derivePaymentPublicKey(a, idx) {
-    if (!ecc.isPrivate(a))
-      throw new TypeError('Invalid private key');
+    if (!ecc.isPrivate(a) && !ecc.isPoint(a))
+      throw new TypeError('Argument is neither a valid private key or public key');
 
-    const B = this.derive(idx).publicKey;
+    let B = null;
+    let S = null;
+
+    if (ecc.isPrivate(a)) {
+      // a is a private key
+      B = this.derive(idx).publicKey;
+      S = ecc.pointMultiply(B, a);
+
+    } else if (ecc.isPoint(a)) {
+      if (!this._hasPrivKeys())
+        throw new Error('Unable to compute the derivation with a public key provided as argument');
+      // a is a public key
+      const A = a;
+      const b_node = this.derive(idx);
+      const b = b_node.privateKey;
+      B = b_node.publicKey;
+      S = ecc.pointMultiply(A, b);
+    }
 
     if (!ecc.isPoint(B))
       throw new TypeError('Invalid derived public key');
 
-    const S = ecc.pointMultiply(B, a);
     const Sx = S.slice(1, 33);
     const s = sha256(Sx);
 
@@ -102,3 +139,9 @@ function fromBuffer(buf, network) {
   return new PaymentCode(buf, network);
 }
 exports.fromBuffer = fromBuffer;
+
+
+function fromWalletSeed(bSeed, id, network) {
+  return PaymentCode.fromSeed(bSeed, id, network);
+}
+exports.fromWalletSeed = fromWalletSeed;
