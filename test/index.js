@@ -1,6 +1,7 @@
 'use strict'
 
 const assert = require('assert')
+const ecc = require('tiny-secp256k1');
 const bip47 = require('../src')
 const utils = bip47.utils
 
@@ -163,6 +164,27 @@ describe('payment-code', function() {
         assert(false);
       } catch(e) {
         assert(true);
+      }
+    });
+  });
+
+  describe('PaymentCode.derivePaymentPrivateKey()', function() {
+    it('should successfully derive private keys from a payment code and a notif pubkey', function() {
+      try {
+        const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
+        const seed = Buffer.from(PC_2.seed, 'hex');
+        const pc2 = bip47.fromWalletSeed(seed, 0);
+        for (let i=0; i<10; i++) {
+          const privkeyPayment = pc2.derivePaymentPrivateKey(pubkey1, i);
+          const strPubkeyPayment = ecc.pointFromScalar(privkeyPayment).toString('hex');
+          const strPubkeyPayment2 = pc2.derivePaymentPublicKey(pubkey1, i).toString('hex');
+          if (strPubkeyPayment !== strPubkeyPayment2)
+            assert(false);
+        }
+        assert(true);
+      } catch(e) {
+        console.log(e)
+        assert(false);
       }
     });
   });
