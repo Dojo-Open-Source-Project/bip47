@@ -83,6 +83,22 @@ class PaymentCode {
     return getP2pkhAddress(child.publicKey, this.network);
   }
 
+  derivePaymentPrivateKey(A, idx) {
+    if (!ecc.isPoint(A))
+      throw new TypeError('Argument is not a valid public key');
+
+    const b_node = this.derive(idx);
+    const b = b_node.privateKey;
+    const S = ecc.pointMultiply(A, b);
+    const Sx = S.slice(1, 33);
+    const s = sha256(Sx);
+
+    if (!ecc.isPrivate(s))
+      throw new TypeError('Invalid shared secret');
+
+    return ecc.privateAdd(b, s);
+  }
+
   derivePaymentPublicKey(a, idx) {
     if (!ecc.isPrivate(a) && !ecc.isPoint(a))
       throw new TypeError('Argument is neither a valid private key or public key');
