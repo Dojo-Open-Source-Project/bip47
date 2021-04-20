@@ -1,6 +1,9 @@
 {
   "name": "bip47-js",
   "version": "0.4.0",
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "description": "A set of utilities for working with BIP47 and bitcoinjs-lib",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -16,11 +19,16 @@
     "build:clean": "rm -rf dist",
     "build:cjs": "tsc -p tsconfig.build.cjs.json",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build": "npm run build:clean && npm run build:cjs && npm run build:esm && bin/fixup.sh"
+    "build": "npm run build:clean && npm run build:cjs && npm run build:esm && bin/fixup.sh",
+    "prepack": "npm run typescript && npm run test",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@code.samourai.io:dojo/bip47-js.git"
+    "url": "https://code.samourai.io/dojo/bip47-js.git"
+  },
+  "bugs": {
+    "url": "https://code.samourai.io/dojo/bip47-js/-/issues"
   },
   "author": "Katana Cryptographic Ltd.",
   "license": "AGPL-3.0-only",

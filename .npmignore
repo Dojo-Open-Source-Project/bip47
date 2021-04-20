@@ -1,0 +1,7 @@
+src/
+test/
+bin/
+.vscode/
+.idea/
+
+tsconfig*
