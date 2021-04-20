@@ -2,9 +2,21 @@
   "name": "bip47-js",
   "version": "0.4.0",
   "description": "A set of utilities for working with BIP47 and bitcoinjs-lib",
-  "main": "src/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "scripts": {
-    "test": "mocha --recursive --reporter spec"
+    "test": "mocha -r ts-node/register test/**/*.ts",
+    "typescript": "tsc --noEmit",
+    "build:clean": "rm -rf dist",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build": "npm run build:clean && npm run build:cjs && npm run build:esm && bin/fixup.sh"
   },
   "repository": {
     "type": "git",
