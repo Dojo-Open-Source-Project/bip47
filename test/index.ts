@@ -1,8 +1,7 @@
-'use strict'
+import assert from 'assert';
+import ecc from 'tiny-secp256k1';
+import * as bip47 from '../src';
 
-const assert = require('assert')
-const ecc = require('tiny-secp256k1');
-const bip47 = require('../src')
 const utils = bip47.utils
 
 
@@ -82,7 +81,7 @@ describe('payment-code', function() {
         const seed = Buffer.from(PC_2.seed, 'hex');
         const pc = bip47.fromWalletSeed(seed, 0);
         const pc_b58 = pc.toBase58();
-        assert(pc_b58 == PC_2.pcBase58);
+        assert(pc_b58 === PC_2.pcBase58);
       } catch(e) {
         console.log(e)
         assert(false);
@@ -95,11 +94,11 @@ describe('payment-code', function() {
       try {
         const pc1 = bip47.fromBase58(PC_1.pcBase58);
         const pc1_b58 = pc1.toBase58();
-        assert(pc1_b58 == PC_1.pcBase58);
+        assert(pc1_b58 === PC_1.pcBase58);
 
         const pc2 = bip47.fromBase58(PC_2.pcBase58);
         const pc2_b58 = pc2.toBase58();
-        assert(pc2_b58 == PC_2.pcBase58);
+        assert(pc2_b58 === PC_2.pcBase58);
       } catch(e) {
         assert(false);
       }
@@ -111,11 +110,11 @@ describe('payment-code', function() {
       try {
         const pc1 = bip47.fromBase58(PC_1.pcBase58);
         const notifAddr1 = pc1.getNotificationAddress();
-        assert(notifAddr1 == PC_1.notifAddr);
+        assert(notifAddr1 === PC_1.notifAddr);
 
         const pc2 = bip47.fromBase58(PC_2.pcBase58);
         const notifAddr2 = pc2.getNotificationAddress();
-        assert(notifAddr2 == PC_2.notifAddr);
+        assert(notifAddr2 === PC_2.notifAddr);
       } catch(e) {
         assert(false);
       }
@@ -176,7 +175,7 @@ describe('payment-code', function() {
         const pc2 = bip47.fromWalletSeed(seed, 0);
         for (let i=0; i<10; i++) {
           const privkeyPayment = pc2.derivePaymentPrivateKey(pubkey1, i);
-          const strPubkeyPayment = ecc.pointFromScalar(privkeyPayment).toString('hex');
+          const strPubkeyPayment = ecc.pointFromScalar(privkeyPayment)?.toString('hex');
           const strPubkeyPayment2 = pc2.derivePaymentPublicKey(pubkey1, i).toString('hex');
           if (strPubkeyPayment !== strPubkeyPayment2)
             assert(false);
