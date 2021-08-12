@@ -1,6 +1,6 @@
 {
   "name": "bip47-js",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "engines": {
     "node": ">=14.0.0"
   },

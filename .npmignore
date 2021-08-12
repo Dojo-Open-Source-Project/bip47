@@ -3,5 +3,6 @@ test/
 bin/
 .vscode/
 .idea/
+.gitignore
 
 tsconfig*
