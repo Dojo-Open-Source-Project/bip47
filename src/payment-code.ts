@@ -1,5 +1,6 @@
 import ecc from 'tiny-secp256k1';
-import {networks, getP2pkhAddress, sha256, Network} from './utils';
+import {Network} from 'bitcoinjs-lib';
+import {networks, getP2pkhAddress, sha256} from './utils';
 import {BIP32Interface, fromPublicKey, fromSeed} from 'bip32';
 import {encode, decode} from 'bs58check';
 

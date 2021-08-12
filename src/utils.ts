@@ -1,5 +1,6 @@
 import createHash from 'create-hash';
 import bs58check from 'bs58check';
+import {Network} from 'bitcoinjs-lib';
 
 export const networks = {
     bitcoin: {
@@ -12,7 +13,7 @@ export const networks = {
         pubKeyHash: 0x00,
         scriptHash: 0x05,
         wif: 0x80,
-    },
+    } as Network,
 
     regtest: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -24,7 +25,7 @@ export const networks = {
         pubKeyHash: 0x6f,
         scriptHash: 0xc4,
         wif: 0xef,
-    },
+    } as Network,
 
     testnet: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -36,10 +37,8 @@ export const networks = {
         pubKeyHash: 0x6f,
         scriptHash: 0xc4,
         wif: 0xef,
-    }
+    } as Network
 } as const;
-
-export type Network = typeof networks[keyof typeof networks];
 
 export function ripemd160(buffer: Buffer) {
     return createHash('rmd160').update(buffer).digest();
