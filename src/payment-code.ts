@@ -1,20 +1,25 @@
-import ecc from 'tiny-secp256k1';
-import {Network} from 'bitcoinjs-lib';
-import {networks, getP2pkhAddress, sha256} from './utils';
-import {BIP32Interface, fromPublicKey, fromSeed} from 'bip32';
-import {encode, decode} from 'bs58check';
+import * as ecc from 'tiny-secp256k1';
+import type {Network} from 'bitcoinjs-lib';
+import {BIP32Factory, BIP32Interface} from 'bip32';
+import bs58check from 'bs58check';
 
+import * as utils from './utils.js';
+
+const {encode, decode} = bs58check;
 
 const PC_VERSION = 0x47;
 
+const { fromPublicKey, fromSeed } = BIP32Factory(ecc)
 
-class PaymentCode {
+type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
+
+export class PaymentCode {
     version: Buffer;
     buf: Buffer;
     network: Network;
     root: BIP32Interface;
 
-    constructor(buf: Buffer, network: Network = networks.bitcoin) {
+    constructor(buf: Buffer, network: Network = utils.networks.bitcoin) {
         if (buf.length !== 80)
             throw new TypeError('Invalid buffer length');
 
@@ -27,10 +32,10 @@ class PaymentCode {
         this.root = fromPublicKey(this.pubKey, this.chainCode, this.network);
     }
 
-    static fromSeed(bSeed: Buffer, id: number | string, network: Network = networks.bitcoin): PaymentCode {
+    static fromSeed(bSeed: Buffer, id: number | string, network: Network = utils.networks.bitcoin): PaymentCode {
         const reserved = Buffer.alloc(13, 0);
         const root = fromSeed(bSeed);
-        const coinType = (network.pubKeyHash === networks.bitcoin.pubKeyHash) ? '0' : '1';
+        const coinType = (network.pubKeyHash === utils.networks.bitcoin.pubKeyHash) ? '0' : '1';
         const root_bip47 = root.derivePath(`m/47'/${coinType}'/${id}'`);
 
         let pc = Buffer.from('0100', 'hex'); // version + options
@@ -43,6 +48,20 @@ class PaymentCode {
         const pcode = new PaymentCode(pc, network);
         pcode.root = root_bip47; // store the privkey
         return pcode;
+    }
+
+    static fromBase58(inString: string, network?: Network): PaymentCode {
+        const buf = decode(inString);
+
+        const version = buf.slice(0, 1);
+        if (version[0] !== PC_VERSION)
+            throw new TypeError('Invalid version');
+
+        return new PaymentCode(buf.slice(1), network);
+    }
+
+    static fromBuffer(buf: Buffer, network?: Network) {
+        return new PaymentCode(buf, network);
     }
 
     get features(): Buffer {
@@ -81,7 +100,7 @@ class PaymentCode {
 
     getNotificationAddress(): string {
         const child = this.derive(0);
-        return getP2pkhAddress(child.publicKey, this.network);
+        return utils.getP2pkhAddress(child.publicKey, this.network);
     }
 
     derivePaymentPrivateKey(A: Buffer, idx: number): Buffer {
@@ -100,7 +119,7 @@ class PaymentCode {
             throw new Error("Unable to compute resulting point")
 
         const Sx = S.slice(1, 33);
-        const s = sha256(Sx);
+        const s = utils.sha256(Buffer.from(Sx));
 
         if (!ecc.isPrivate(s))
             throw new TypeError('Invalid shared secret');
@@ -110,7 +129,7 @@ class PaymentCode {
         if (!paymentPrivateKey)
             throw new TypeError('Unable to compute payment private key');
 
-        return paymentPrivateKey;
+        return Buffer.from(paymentPrivateKey);
     }
 
     derivePaymentPublicKey(a: Buffer, idx: number): Buffer {
@@ -147,7 +166,7 @@ class PaymentCode {
             throw new Error('Unable to compute resulting point');
 
         const Sx = S.slice(1, 33);
-        const s = sha256(Sx);
+        const s = utils.sha256(Buffer.from(Sx));
 
         if (!ecc.isPrivate(s))
             throw new TypeError('Invalid shared secret');
@@ -162,36 +181,24 @@ class PaymentCode {
         if (!paymentPublicKey)
             throw new TypeError('Unable to compute payment public key');
 
-        return paymentPublicKey;
+        return Buffer.from(paymentPublicKey);
     }
 
-    getPaymentAddress(a: Buffer, idx: number): string {
+    getPaymentAddress(a: Buffer, idx: number, type: AddressType): string {
         const pubkey = this.derivePaymentPublicKey(a, idx);
 
         if (!pubkey)
             throw new TypeError('Unable to derive public key')
 
-        return getP2pkhAddress(pubkey, this.network);
+        switch (type) {
+            case "p2pkh":
+                return utils.getP2pkhAddress(pubkey, this.network);
+            case "p2sh":
+                return utils.getP2shAddress(pubkey, this.network);
+            case "p2wpkh":
+                return utils.getP2wpkhAddress(pubkey, this.network);
+            default:
+                throw new Error('Address type has not been defined: p2pkh | p2sh | p2wpkh')
+        }
     }
-}
-
-
-export function fromBase58(inString: string, network?: Network): PaymentCode {
-    const buf = decode(inString);
-
-    const version = buf.slice(0, 1);
-    if (version[0] !== PC_VERSION)
-        throw new TypeError('Invalid version');
-
-    return new PaymentCode(buf.slice(1), network);
-}
-
-
-export function fromBuffer(buf: Buffer, network?: Network) {
-    return new PaymentCode(buf, network);
-}
-
-
-export function fromWalletSeed(bSeed: Buffer, id: number | string, network?: Network) {
-    return PaymentCode.fromSeed(bSeed, id, network);
 }

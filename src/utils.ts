@@ -1,8 +1,9 @@
 import createHash from 'create-hash';
 import bs58check from 'bs58check';
-import {Network} from 'bitcoinjs-lib';
+import {bech32} from "bech32";
+import type {Network} from 'bitcoinjs-lib';
 
-export const networks = {
+export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     bitcoin: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
         bech32: 'bc',
@@ -13,7 +14,7 @@ export const networks = {
         pubKeyHash: 0x00,
         scriptHash: 0x05,
         wif: 0x80,
-    } as Network,
+    },
 
     regtest: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -25,7 +26,7 @@ export const networks = {
         pubKeyHash: 0x6f,
         scriptHash: 0xc4,
         wif: 0xef,
-    } as Network,
+    },
 
     testnet: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -37,8 +38,8 @@ export const networks = {
         pubKeyHash: 0x6f,
         scriptHash: 0xc4,
         wif: 0xef,
-    } as Network
-} as const;
+    }
+};
 
 export function ripemd160(buffer: Buffer) {
     return createHash('rmd160').update(buffer).digest();
@@ -60,5 +61,22 @@ export function toBase58Check(hash: Buffer, version: number) {
 }
 
 export function getP2pkhAddress(pubkey: Buffer, network: Network) {
-    return toBase58Check(hash160(pubkey), network.pubKeyHash)
+    return toBase58Check(hash160(pubkey), network.pubKeyHash);
+}
+
+export function getP2shAddress(pubkey: Buffer, network: Network) {
+    const push20 = Buffer.from(new Uint8Array([0, 0x14]));
+
+    const scriptSig = Buffer.concat([push20, hash160(pubkey)]);
+
+    return toBase58Check(hash160(scriptSig), network.scriptHash);
+}
+
+export function getP2wpkhAddress(pubkey: Buffer, network: Network) {
+    const hash = hash160(pubkey);
+    const words = bech32.toWords(hash);
+
+    words.unshift(0x00);
+
+    return bech32.encode(network.bech32, words);
 }

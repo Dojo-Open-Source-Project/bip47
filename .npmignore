@@ -1,8 +1,8 @@
 src/
 test/
-bin/
 .vscode/
 .idea/
 .gitignore
+.mocharc.json
 
 tsconfig*
