@@ -13,7 +13,7 @@ const { fromPublicKey, fromSeed } = BIP32Factory(ecc)
 
 type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
 
-class PaymentCode {
+export class PaymentCode {
     version: Buffer;
     buf: Buffer;
     network: Network;
@@ -48,6 +48,20 @@ class PaymentCode {
         const pcode = new PaymentCode(pc, network);
         pcode.root = root_bip47; // store the privkey
         return pcode;
+    }
+
+    static fromBase58(inString: string, network?: Network): PaymentCode {
+        const buf = decode(inString);
+
+        const version = buf.slice(0, 1);
+        if (version[0] !== PC_VERSION)
+            throw new TypeError('Invalid version');
+
+        return new PaymentCode(buf.slice(1), network);
+    }
+
+    static fromBuffer(buf: Buffer, network?: Network) {
+        return new PaymentCode(buf, network);
     }
 
     get features(): Buffer {
@@ -187,25 +201,4 @@ class PaymentCode {
                 throw new Error('Address type has not been defined: p2pkh | p2sh | p2wpkh')
         }
     }
-}
-
-
-export function fromBase58(inString: string, network?: Network): PaymentCode {
-    const buf = decode(inString);
-
-    const version = buf.slice(0, 1);
-    if (version[0] !== PC_VERSION)
-        throw new TypeError('Invalid version');
-
-    return new PaymentCode(buf.slice(1), network);
-}
-
-
-export function fromBuffer(buf: Buffer, network?: Network) {
-    return new PaymentCode(buf, network);
-}
-
-
-export function fromWalletSeed(bSeed: Buffer, id: number | string, network?: Network) {
-    return PaymentCode.fromSeed(bSeed, id, network);
 }
