@@ -20,10 +20,11 @@
   "scripts": {
     "test": "mocha",
     "typescript": "tsc --noEmit",
+    "lint": "eslint --ext .ts src/ test/",
     "build:clean": "rm -rf dist",
     "build:esm": "tsc -p tsconfig.build.json",
     "build": "npm run build:clean && npm run build:esm",
-    "prepack": "npm run typescript && npm run test",
+    "prepack": "npm run lint && npm run typescript && npm run test",
     "prepare": "npm run build"
   },
   "repository": {
@@ -49,7 +50,13 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "^14.18.31",
     "@types/tiny-secp256k1": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
     "bitcoinjs-lib": "^6.0.2",
+    "eslint": "^8.24.0",
+    "eslint-import-resolver-typescript": "^3.5.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-unicorn": "^44.0.0",
     "mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"

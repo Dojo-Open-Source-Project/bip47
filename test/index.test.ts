@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as ecc from 'tiny-secp256k1';
 import {PaymentCode} from '../src';
-import {networks} from "../dist/utils";
+import {networks} from '../src/utils.js';
 
 
 /**
@@ -75,7 +75,7 @@ const PC_2_PAYMENT_ADDR = [
         p2sh: '3ALkcRwUk1QhkZhcG7t9ooAAu7o12MGQr7',
         p2wpkh: 'bc1q4ugsxkh69aknjvskm8k2susv9c6dq0pp3476y0'
     }
-]
+];
 
 const PC_3 = {
     pcBase58: 'QM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935Ubb7q8tx9GVbh2UuRnBc3WSyJHhUrw8KhprKnn9eDznYGieTzFcwQRya4GA',
@@ -83,7 +83,7 @@ const PC_3 = {
 
 const PC_4 = {
     pc: '020002b85034fb08a8bfefd22848238257b252721454bbbfba2c3667f168837ea2cdad671af9f65904632e2dcc0c6ad314e11d53fc82fa4c4ea27a4a14eccecc478fee00000000000000000000000000'
-}
+};
 
 
 describe('payment-code', () => {
@@ -92,7 +92,7 @@ describe('payment-code', () => {
         it('should successfully initialize a PaymentCode from a base58 payment code', () => {
             assert.doesNotThrow(() => {
                 PaymentCode.fromBase58(PC_1.pcBase58);
-            })
+            });
         });
         it('should reject a version 2 payment code', () => {
             assert.throws(() => {
@@ -156,7 +156,7 @@ describe('payment-code', () => {
 
             const pubkeyPayment = pc2.derivePaymentPublicKey(privkey1, 0);
 
-            assert.strictEqual(pubkeyPayment.toString('hex'), PC_2_PAYMENT_ADDR[0].pubkey)
+            assert.strictEqual(pubkeyPayment.toString('hex'), PC_2_PAYMENT_ADDR[0].pubkey);
         });
 
         it('should successfully derive public keys from a payment code and a notif pubkey', () => {
@@ -166,7 +166,7 @@ describe('payment-code', () => {
 
             const pubkeyPayment = pc2.derivePaymentPublicKey(pubkey1, 0);
 
-            assert.strictEqual(pubkeyPayment.toString('hex'), PC_2_PAYMENT_ADDR[0].pubkey)
+            assert.strictEqual(pubkeyPayment.toString('hex'), PC_2_PAYMENT_ADDR[0].pubkey);
         });
 
         it('should fail to derive public keys from a notif pubkey if master privkey is unknown', () => {
@@ -175,7 +175,7 @@ describe('payment-code', () => {
                 const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
 
                 pc2.derivePaymentPublicKey(pubkey1, 0);
-            })
+            });
         });
     });
 
@@ -200,7 +200,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2pkh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2pkh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2pkh);
             }
         });
 
@@ -211,7 +211,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2pkh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2pkh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2pkh);
             }
         });
 
@@ -221,7 +221,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2sh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2sh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2sh);
             }
         });
 
@@ -232,7 +232,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2sh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2sh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2sh);
             }
         });
 
@@ -242,7 +242,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2wpkh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2wpkh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2wpkh);
             }
         });
 
@@ -253,7 +253,7 @@ describe('payment-code', () => {
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2wpkh');
 
-                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2wpkh)
+                assert.strictEqual(addrPayment, PC_2_PAYMENT_ADDR[i].p2wpkh);
             }
         });
     });

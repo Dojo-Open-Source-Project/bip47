@@ -1,15 +1,15 @@
 import createHash from 'create-hash';
 import bs58check from 'bs58check';
-import {bech32} from "bech32";
+import {bech32} from 'bech32';
 import type {Network} from 'bitcoinjs-lib';
 
 export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     bitcoin: {
-        messagePrefix: '\x18Bitcoin Signed Message:\n',
+        messagePrefix: '\u0018Bitcoin Signed Message:\n',
         bech32: 'bc',
         bip32: {
-            public: 0x0488b21e,
-            private: 0x0488ade4,
+            public: 0x0488B21E,
+            private: 0x0488ADE4,
         },
         pubKeyHash: 0x00,
         scriptHash: 0x05,
@@ -17,27 +17,27 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     },
 
     regtest: {
-        messagePrefix: '\x18Bitcoin Signed Message:\n',
+        messagePrefix: '\u0018Bitcoin Signed Message:\n',
         bech32: 'bcrt',
         bip32: {
-            public: 0x043587cf,
+            public: 0x043587CF,
             private: 0x04358394,
         },
-        pubKeyHash: 0x6f,
-        scriptHash: 0xc4,
-        wif: 0xef,
+        pubKeyHash: 0x6F,
+        scriptHash: 0xC4,
+        wif: 0xEF,
     },
 
     testnet: {
-        messagePrefix: '\x18Bitcoin Signed Message:\n',
+        messagePrefix: '\u0018Bitcoin Signed Message:\n',
         bech32: 'tb',
         bip32: {
-            public: 0x043587cf,
+            public: 0x043587CF,
             private: 0x04358394,
         },
-        pubKeyHash: 0x6f,
-        scriptHash: 0xc4,
-        wif: 0xef,
+        pubKeyHash: 0x6F,
+        scriptHash: 0xC4,
+        wif: 0xEF,
     }
 };
 

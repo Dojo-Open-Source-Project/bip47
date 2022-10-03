@@ -4,5 +4,6 @@ test/
 .idea/
 .gitignore
 .mocharc.json
+.eslintrc.json
 
 tsconfig*
