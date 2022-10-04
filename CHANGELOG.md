@@ -1,6 +1,10 @@
 # Changelog
 
 ## v0.6.2
+### Bugfixes
+- fixed broken bitcoin networks object
+
+## v0.6.2
 ### Features
 - updated dependencies
 
