@@ -1,6 +1,6 @@
 {
   "name": "@samouraiwallet/bip47",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -10,9 +10,11 @@
     "bitcoinjs",
     "bitcoinjs-lib",
     "bip47",
-    "bip-47"
+    "bip-47",
+    "paynym"
   ],
   "type": "module",
+  "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js"
   },
@@ -20,10 +22,11 @@
   "scripts": {
     "test": "mocha",
     "typescript": "tsc --noEmit",
+    "lint": "eslint --ext .ts src/ test/",
     "build:clean": "rm -rf dist",
     "build:esm": "tsc -p tsconfig.build.json",
     "build": "npm run build:clean && npm run build:esm",
-    "prepack": "npm run typescript && npm run test",
+    "prepack": "npm run lint && npm run typescript && npm run test",
     "prepare": "npm run build"
   },
   "repository": {
@@ -38,7 +41,7 @@
   "homepage": "https://code.samourai.io/dojo/bip47-js",
   "dependencies": {
     "bech32": "2.0.0",
-    "bip32": "3.0.1",
+    "bip32": "3.1.0",
     "bs58check": "2.1.2",
     "create-hash": "1.2.0",
     "tiny-secp256k1": "2.2.1"
@@ -46,12 +49,18 @@
   "devDependencies": {
     "@types/bs58check": "^2.1.0",
     "@types/create-hash": "^1.2.2",
-    "@types/mocha": "^9.1.0",
-    "@types/node": "^14.18.12",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^16.11.63",
     "@types/tiny-secp256k1": "^2.0.1",
-    "bitcoinjs-lib": "^6.0.1",
-    "mocha": "^9.1.3",
-    "ts-node": "^10.5.0",
-    "typescript": "^4.5.5"
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "bitcoinjs-lib": "^6.0.2",
+    "eslint": "^8.24.0",
+    "eslint-import-resolver-typescript": "^3.5.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-unicorn": "^44.0.0",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
   }
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.2
+### Features
+- updated dependencies
+
 ## v0.6.1
 ### Features
 - fixed documentation

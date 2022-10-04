@@ -9,7 +9,7 @@ const {encode, decode} = bs58check;
 
 const PC_VERSION = 0x47;
 
-const { fromPublicKey, fromSeed } = BIP32Factory(ecc)
+const { fromPublicKey, fromSeed } = BIP32Factory(ecc);
 
 type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
 
@@ -110,13 +110,13 @@ export class PaymentCode {
         const b_node = this.derive(idx);
 
         if (!b_node.privateKey)
-            throw new Error("Unable to derive node with private key");
+            throw new Error('Unable to derive node with private key');
 
         const b = b_node.privateKey;
         const S = ecc.pointMultiply(A, b);
 
         if (!S)
-            throw new Error("Unable to compute resulting point")
+            throw new Error('Unable to compute resulting point');
 
         const Sx = S.slice(1, 33);
         const s = utils.sha256(Buffer.from(Sx));
@@ -152,7 +152,7 @@ export class PaymentCode {
             const b_node = this.derive(idx);
 
             if (!b_node.privateKey)
-                throw new Error("Unable to derive node with private key");
+                throw new Error('Unable to derive node with private key');
 
             const b = b_node.privateKey;
             B = b_node.publicKey;
@@ -188,17 +188,21 @@ export class PaymentCode {
         const pubkey = this.derivePaymentPublicKey(a, idx);
 
         if (!pubkey)
-            throw new TypeError('Unable to derive public key')
+            throw new TypeError('Unable to derive public key');
 
         switch (type) {
-            case "p2pkh":
-                return utils.getP2pkhAddress(pubkey, this.network);
-            case "p2sh":
-                return utils.getP2shAddress(pubkey, this.network);
-            case "p2wpkh":
-                return utils.getP2wpkhAddress(pubkey, this.network);
-            default:
-                throw new Error('Address type has not been defined: p2pkh | p2sh | p2wpkh')
+        case 'p2pkh': {
+            return utils.getP2pkhAddress(pubkey, this.network);
+        }
+        case 'p2sh': {
+            return utils.getP2shAddress(pubkey, this.network);
+        }
+        case 'p2wpkh': {
+            return utils.getP2wpkhAddress(pubkey, this.network);
+        }
+        default: {
+            throw new Error('Address type has not been defined: p2pkh | p2sh | p2wpkh');
+        }
         }
     }
 }

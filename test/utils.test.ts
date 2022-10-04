@@ -18,36 +18,36 @@ const PUBKEYS = new Map([
         p2sh: '3PcKB1iFX2ZwGg61L8s2wrFVsm85B2Sytr',
         p2wpkh: 'bc1qasmrd33pnhs040p7ug53ycrldmyqxm97j29slp'
     }]
-])
+]);
 
 describe('utils', () => {
     describe('getP2pkhAddress()', () => {
         it('should provide correct P2PKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2pkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin)
+                const address = utils.getP2pkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
 
-                assert.strictEqual(address, result.p2pkh)
+                assert.strictEqual(address, result.p2pkh);
             }
-        })
-    })
+        });
+    });
 
     describe('getP2shAddress()', () => {
         it('should provide correct P2SH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2shAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin)
+                const address = utils.getP2shAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
 
-                assert.strictEqual(address, result.p2sh)
+                assert.strictEqual(address, result.p2sh);
             }
-        })
-    })
+        });
+    });
 
     describe('getP2wpkhAddress()', () => {
         it('should provide correct P2PWKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2wpkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin)
+                const address = utils.getP2wpkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
 
-                assert.strictEqual(address, result.p2wpkh)
+                assert.strictEqual(address, result.p2wpkh);
             }
-        })
-    })
-})
+        });
+    });
+});
