@@ -10,6 +10,15 @@ Source code was written in Typescript. Type definitions are included in the publ
 
 All necessary documentation of usage is provided via test files.
 
+## Using in browser
+
+You will need webpack/browserify to bundle this library and it's dependencies to be able to use it in browser
+environment.
+Since `tiny-secp256k1` is a WASM library, it will require such bundler to be able to load WASM code.
+Please consult the docs of a bundler that you use for further information.
+
+For example current webpack will require you to set `{ experiments: { asyncWebAssembly: true }}` in your config.
+
 ### Mainnet
 
 ```js
