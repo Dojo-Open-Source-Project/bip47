@@ -10,9 +10,11 @@
     "bitcoinjs",
     "bitcoinjs-lib",
     "bip47",
-    "bip-47"
+    "bip-47",
+    "paynym"
   ],
   "type": "module",
+  "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js"
   },
