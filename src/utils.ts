@@ -2,7 +2,8 @@
 import createHash from 'create-hash';
 import bs58check from 'bs58check';
 import {bech32} from 'bech32';
-import type {Network} from 'bitcoinjs-lib';
+
+import {Network} from './types';
 
 export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     bitcoin: {

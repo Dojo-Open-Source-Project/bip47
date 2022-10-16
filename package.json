@@ -43,8 +43,7 @@
     "bech32": "2.0.0",
     "bip32": "3.1.0",
     "bs58check": "2.1.2",
-    "create-hash": "1.2.0",
-    "tiny-secp256k1": "2.2.1"
+    "create-hash": "1.2.0"
   },
   "devDependencies": {
     "@types/bs58check": "^2.1.0",
@@ -52,14 +51,14 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "^16.11.63",
     "@types/tiny-secp256k1": "^2.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.38.1",
-    "@typescript-eslint/parser": "^5.38.1",
-    "bitcoinjs-lib": "^6.0.2",
-    "eslint": "^8.24.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.0",
+    "@typescript-eslint/parser": "^5.40.0",
+    "eslint": "^8.25.0",
     "eslint-import-resolver-typescript": "^3.5.1",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-unicorn": "^44.0.0",
-    "mocha": "^10.0.0",
+    "eslint-plugin-unicorn": "^44.0.2",
+    "mocha": "^10.1.0",
+    "tiny-secp256k1": "^2.2.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
   }
