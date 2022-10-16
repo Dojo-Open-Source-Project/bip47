@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as ecc from 'tiny-secp256k1';
-import {PaymentCode} from '../src';
+import {BIP47Factory} from '../src';
 import {networks} from '../src/utils.js';
 
 
@@ -85,24 +85,25 @@ const PC_4 = {
     pc: '020002b85034fb08a8bfefd22848238257b252721454bbbfba2c3667f168837ea2cdad671af9f65904632e2dcc0c6ad314e11d53fc82fa4c4ea27a4a14eccecc478fee00000000000000000000000000'
 };
 
+const bip47 = BIP47Factory(ecc);
 
 describe('payment-code', () => {
 
     describe('PaymentCode.fromBase58()', () => {
         it('should successfully initialize a PaymentCode from a base58 payment code', () => {
             assert.doesNotThrow(() => {
-                PaymentCode.fromBase58(PC_1.pcBase58);
+                bip47.fromBase58(PC_1.pcBase58);
             });
         });
         it('should reject a version 2 payment code', () => {
             assert.throws(() => {
                 const buf = Buffer.from(PC_4.pc, 'hex');
-                PaymentCode.fromBuffer(buf);
+                bip47.fromBuffer(buf);
             });
         });
         it('should fail to initialize a PaymentCode with an invalid version', () => {
             assert.throws(() => {
-                PaymentCode.fromBase58(PC_3.pcBase58);
+                bip47.fromBase58(PC_3.pcBase58);
             });
         });
     });
@@ -110,7 +111,7 @@ describe('payment-code', () => {
     describe('PaymentCode.fromSeed()', () => {
         it('should successfully initialize a PaymentCode from a seed', () => {
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc = PaymentCode.fromSeed(seed, 0);
+            const pc = bip47.fromSeed(seed, 0);
             const pc_b58 = pc.toBase58();
             assert.strictEqual(pc_b58, PC_2.pcBase58);
         });
@@ -119,7 +120,7 @@ describe('payment-code', () => {
     describe('PaymentCode.fromBuffer()', () => {
         it('should successfully initialize a PaymentCode from public key', () => {
             const seed = Buffer.from(PC_1.pc, 'hex');
-            const pc = PaymentCode.fromBuffer(seed, networks.bitcoin);
+            const pc = bip47.fromBuffer(seed, networks.bitcoin);
             const pc_b58 = pc.toBase58();
             assert.strictEqual(pc_b58, PC_1.pcBase58);
         });
@@ -127,11 +128,11 @@ describe('payment-code', () => {
 
     describe('PaymentCode.toBase58()', () => {
         it('should successfully reencode a payment code in base58', () => {
-            const pc1 = PaymentCode.fromBase58(PC_1.pcBase58);
+            const pc1 = bip47.fromBase58(PC_1.pcBase58);
             const pc1_b58 = pc1.toBase58();
             assert.strictEqual(pc1_b58, PC_1.pcBase58);
 
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
             const pc2_b58 = pc2.toBase58();
             assert.strictEqual(pc2_b58, PC_2.pcBase58);
         });
@@ -139,20 +140,39 @@ describe('payment-code', () => {
 
     describe('PaymentCode.getNotificationAddress()', () => {
         it('should successfully derive notification addresses', () => {
-            const pc1 = PaymentCode.fromBase58(PC_1.pcBase58);
+            const pc1 = bip47.fromBase58(PC_1.pcBase58);
             const notifAddr1 = pc1.getNotificationAddress();
             assert.strictEqual(notifAddr1, PC_1.notifAddr);
 
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
             const notifAddr2 = pc2.getNotificationAddress();
             assert.strictEqual(notifAddr2, PC_2.notifAddr);
+        });
+    });
+
+    describe('PaymentCode.getNotificationPrivateKey()', () => {
+        it('should successfully get private key associated with notification address', () => {
+            const seed = Buffer.from(PC_2.seed, 'hex');
+            const pc = bip47.fromSeed(seed, 0);
+
+            const privKey = pc.getNotificationPrivateKey().toString('hex');
+
+            assert.strictEqual(privKey, PC_2.notifPrivkey);
+        });
+
+        it('should throw an error for payment codes without private keys', () => {
+            const pc = bip47.fromBase58(PC_1.pcBase58);
+
+            assert.throws(() => {
+                pc.getNotificationPrivateKey().toString('hex');
+            });
         });
     });
 
     describe('PaymentCode.derivePaymentPublicKey()', () => {
         it('should successfully derive public keys from a payment code and a notif privkey', () => {
             const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
 
             const pubkeyPayment = pc2.derivePaymentPublicKey(privkey1, 0);
 
@@ -162,7 +182,7 @@ describe('payment-code', () => {
         it('should successfully derive public keys from a payment code and a notif pubkey', () => {
             const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc2 = PaymentCode.fromSeed(seed, 0);
+            const pc2 = bip47.fromSeed(seed, 0);
 
             const pubkeyPayment = pc2.derivePaymentPublicKey(pubkey1, 0);
 
@@ -172,7 +192,7 @@ describe('payment-code', () => {
         it('should fail to derive public keys from a notif pubkey if master privkey is unknown', () => {
             assert.throws(() => {
                 const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
-                const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+                const pc2 = bip47.fromBase58(PC_2.pcBase58);
 
                 pc2.derivePaymentPublicKey(pubkey1, 0);
             });
@@ -183,7 +203,7 @@ describe('payment-code', () => {
         it('should successfully derive private keys from a payment code and a notif pubkey', () => {
             const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc2 = PaymentCode.fromSeed(seed, 0);
+            const pc2 = bip47.fromSeed(seed, 0);
             for (let i = 0; i < 10; i++) {
                 const privkeyPayment = pc2.derivePaymentPrivateKey(pubkey1, i);
                 const strPubkeyPayment = Buffer.from(ecc.pointFromScalar(privkeyPayment) || '').toString('hex');
@@ -196,7 +216,7 @@ describe('payment-code', () => {
     describe('PaymentCode.getPaymentAddress()', () => {
         it('should successfully derive P2PKH addresses from a payment code and a notif privkey', () => {
             const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2pkh');
 
@@ -207,7 +227,7 @@ describe('payment-code', () => {
         it('should successfully derive P2PKH addresses from a payment code and a notif pubkey', () => {
             const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc2 = PaymentCode.fromSeed(seed, 0);
+            const pc2 = bip47.fromSeed(seed, 0);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2pkh');
 
@@ -217,7 +237,7 @@ describe('payment-code', () => {
 
         it('should successfully derive P2SH addresses from a payment code and a notif privkey', () => {
             const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2sh');
 
@@ -228,7 +248,7 @@ describe('payment-code', () => {
         it('should successfully derive P2SH addresses from a payment code and a notif pubkey', () => {
             const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc2 = PaymentCode.fromSeed(seed, 0);
+            const pc2 = bip47.fromSeed(seed, 0);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2sh');
 
@@ -238,7 +258,7 @@ describe('payment-code', () => {
 
         it('should successfully derive P2WPKH addresses from a payment code and a notif privkey', () => {
             const privkey1 = Buffer.from(PC_1.notifPrivkey, 'hex');
-            const pc2 = PaymentCode.fromBase58(PC_2.pcBase58);
+            const pc2 = bip47.fromBase58(PC_2.pcBase58);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2wpkh');
 
@@ -249,7 +269,7 @@ describe('payment-code', () => {
         it('should successfully derive P2WPKH addresses from a payment code and a notif pubkey', () => {
             const pubkey1 = Buffer.from(PC_1.notifPubKey, 'hex');
             const seed = Buffer.from(PC_2.seed, 'hex');
-            const pc2 = PaymentCode.fromSeed(seed, 0);
+            const pc2 = bip47.fromSeed(seed, 0);
             for (let i = 0; i < 10; i++) {
                 const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2wpkh');
 
