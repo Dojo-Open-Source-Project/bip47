@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0
+### Features
+- allow usage of custom ecc library
+- added new `getNotificationPrivateKey` method + tests
+
+### Chores
+- updated devDependencies
+- updated README
+
 ## v0.6.2
 ### Bugfixes
 - fixed broken bitcoin networks object
