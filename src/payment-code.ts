@@ -6,18 +6,18 @@ import {Network, TinySecp256k1Interface, AddressType} from './types';
 
 const {encode, decode} = bs58check;
 
-const PC_VERSION = 0x47;
+const PC_VERSION = 0x47 as const;
 
 export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
     const bip32 = BIP32Factory(ecc);
 
     class PaymentCode {
-        version: Buffer;
-        buf: Buffer;
+        version: Uint8Array;
+        buf: Uint8Array;
         network: Network;
         root: BIP32Interface;
 
-        constructor(buf: Buffer, network: Network = utils.networks.bitcoin) {
+        constructor(buf: Uint8Array, network: Network = utils.networks.bitcoin) {
             if (buf.length !== 80)
                 throw new TypeError('Invalid buffer length');
 
@@ -27,22 +27,22 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
 
             this.buf = buf;
             this.network = network;
-            this.root = bip32.fromPublicKey(this.pubKey, this.chainCode, this.network);
+            this.root = bip32.fromPublicKey(Buffer.from(this.pubKey), Buffer.from(this.chainCode), this.network);
         }
 
-        get features(): Buffer {
+        get features(): Uint8Array {
             return this.buf.slice(1, 1);
         }
 
-        get pubKey(): Buffer {
+        get pubKey(): Uint8Array {
             return this.buf.slice(2, 2 + 33);
         }
 
-        get chainCode(): Buffer {
+        get chainCode(): Uint8Array {
             return this.buf.slice(35, 35 + 32);
         }
 
-        get paymentCode(): Buffer {
+        get paymentCode(): Uint8Array {
             return this.buf;
         }
 
@@ -182,18 +182,20 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
         }
     }
 
-    const fromSeed = (bSeed: Buffer, id: number | string, network: Network = utils.networks.bitcoin): PaymentCode => {
-        const reserved = Buffer.alloc(13, 0);
-        const root = bip32.fromSeed(bSeed);
+    const fromSeed = (bSeed: Uint8Array, id: number | string, network: Network = utils.networks.bitcoin): PaymentCode => {
+        const root = bip32.fromSeed(Buffer.from(bSeed));
         const coinType = (network.pubKeyHash === utils.networks.bitcoin.pubKeyHash) ? '0' : '1';
         const root_bip47 = root.derivePath(`m/47'/${coinType}'/${id}'`);
 
-        let pc = Buffer.from('0100', 'hex'); // version + options
-        pc = Buffer.concat([pc, root_bip47.publicKey]);
-        pc = Buffer.concat([pc, root_bip47.chainCode]);
-        if (pc.length !== 67)
-            throw new TypeError('Missing or wrong publicKey or chainCode');
-        pc = Buffer.concat([pc, reserved]); // reserved bytes
+        const pc = new Uint8Array(80);
+
+        pc.set([1, 0]); // set version + options
+
+        if (root_bip47.publicKey.length !== 33) throw new TypeError('Missing or wrong publicKey');
+        pc.set(root_bip47.publicKey, 2); // set public key
+
+        if (root_bip47.chainCode.length !== 32) throw new TypeError('Missing or wrong chainCode');
+        pc.set(root_bip47.chainCode, 35);
 
         const pcode = new PaymentCode(pc, network);
         pcode.root = root_bip47; // store the privkey
@@ -210,7 +212,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
         return new PaymentCode(buf.slice(1), network);
     };
 
-    const fromBuffer = (buf: Buffer, network?: Network): PaymentCode => {
+    const fromBuffer = (buf: Uint8Array, network?: Network): PaymentCode => {
         return new PaymentCode(buf, network);
     };
 
