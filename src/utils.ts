@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/no-hex-escape, unicorn/number-literal-case */
-import createHash from 'create-hash';
+import {sha256 as noble_sha256} from '@noble/hashes/sha256';
+import {ripemd160 as noble_ripemd160} from '@noble/hashes/ripemd160';
 import bs58check from 'bs58check';
 import {bech32} from 'bech32';
 
@@ -43,38 +44,44 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     }
 };
 
-export function ripemd160(buffer: Buffer) {
-    return createHash('rmd160').update(buffer).digest();
+export function ripemd160(buffer: Uint8Array): Uint8Array {
+    return noble_ripemd160(buffer);
 }
 
-export function sha256(buffer: Buffer) {
-    return createHash('sha256').update(buffer).digest();
+export function sha256(buffer: Uint8Array): Uint8Array {
+    return noble_sha256(buffer);
 }
 
-export function hash160(buffer: Buffer) {
+export function hash160(buffer: Uint8Array): Uint8Array {
     return ripemd160(sha256(buffer));
 }
 
-export function toBase58Check(hash: Buffer, version: number) {
-    const payload = Buffer.allocUnsafe(21);
-    payload.writeUInt8(version, 0);
-    hash.copy(payload, 1);
+export function toBase58Check(hash: Uint8Array, version: number): string {
+    const payload = new Uint8Array(21);
+
+    payload.set([version], 0);
+    payload.set(hash, 1);
+
     return bs58check.encode(payload);
 }
 
-export function getP2pkhAddress(pubkey: Buffer, network: Network) {
+export function getP2pkhAddress(pubkey: Uint8Array, network: Network): string {
     return toBase58Check(hash160(pubkey), network.pubKeyHash);
 }
 
 export function getP2shAddress(pubkey: Buffer, network: Network) {
-    const push20 = Buffer.from(new Uint8Array([0, 0x14]));
+    const push20 = new Uint8Array([0, 0x14]);
+    const hash = hash160(pubkey);
 
-    const scriptSig = Buffer.concat([push20, hash160(pubkey)]);
+    const scriptSig = new Uint8Array(push20.length + hash.length);
+
+    scriptSig.set(push20);
+    scriptSig.set(hash, push20.length);
 
     return toBase58Check(hash160(scriptSig), network.scriptHash);
 }
 
-export function getP2wpkhAddress(pubkey: Buffer, network: Network) {
+export function getP2wpkhAddress(pubkey: Uint8Array, network: Network): string {
     const hash = hash160(pubkey);
     const words = bech32.toWords(hash);
 

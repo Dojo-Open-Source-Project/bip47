@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.8.0
+### Breaking
+- minimum required Node.js version is now v16.6.0
+- API now uses `Uint8Array` instead of `Buffer`
+
+### Chores
+- updated dependencies
+- switched from `create-hash` to `@noble/hashes`
+
 ## v0.7.0
 ### Features
 - allow usage of custom ecc library

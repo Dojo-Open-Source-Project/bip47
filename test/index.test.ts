@@ -1,4 +1,4 @@
-import assert from 'assert';
+import {describe, it, assert} from 'vitest';
 import * as ecc from 'tiny-secp256k1';
 import {BIP47Factory} from '../src';
 import {networks} from '../src/utils.js';

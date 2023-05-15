@@ -1,4 +1,4 @@
-import assert from 'assert';
+import {describe, it, assert} from 'vitest';
 
 import * as utils from '../src/utils.js';
 

@@ -1,9 +1,12 @@
 src/
 test/
+coverage/
 .vscode/
 .idea/
 .gitignore
-.mocharc.json
 .eslintrc.json
+vitest.config.ts
+
+*.map
 
 tsconfig*
