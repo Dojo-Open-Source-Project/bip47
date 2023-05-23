@@ -47,8 +47,12 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
         }
 
         toBase58(): string {
-            const version = Buffer.from([PC_VERSION]);
-            const buf = Buffer.concat([version, this.buf]);
+            const version = new Uint8Array([PC_VERSION]);
+            const buf = new Uint8Array(version.length + this.buf.length);
+
+            buf.set(version);
+            buf.set(this.buf, version.length);
+
             return encode(buf);
         }
 
@@ -78,7 +82,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             return child.privateKey!;
         }
 
-        derivePaymentPrivateKey(A: Buffer, idx: number): Buffer {
+        derivePaymentPrivateKey(A: Uint8Array, idx: number): Uint8Array {
             if (!ecc.isPoint(A))
                 throw new TypeError('Argument is not a valid public key');
 
@@ -94,7 +98,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
                 throw new Error('Unable to compute resulting point');
 
             const Sx = S.slice(1, 33);
-            const s = utils.sha256(Buffer.from(Sx));
+            const s = utils.sha256(Sx);
 
             if (!ecc.isPrivate(s))
                 throw new TypeError('Invalid shared secret');
@@ -104,10 +108,10 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             if (!paymentPrivateKey)
                 throw new TypeError('Unable to compute payment private key');
 
-            return Buffer.from(paymentPrivateKey);
+            return paymentPrivateKey;
         }
 
-        derivePaymentPublicKey(a: Buffer, idx: number): Buffer {
+        derivePaymentPublicKey(a: Uint8Array, idx: number): Uint8Array {
             if (!ecc.isPrivate(a) && !ecc.isPoint(a))
                 throw new TypeError('Argument is neither a valid private key or public key');
 
@@ -141,7 +145,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
                 throw new Error('Unable to compute resulting point');
 
             const Sx = S.slice(1, 33);
-            const s = utils.sha256(Buffer.from(Sx));
+            const s = utils.sha256(Sx);
 
             if (!ecc.isPrivate(s))
                 throw new TypeError('Invalid shared secret');
@@ -156,10 +160,10 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             if (!paymentPublicKey)
                 throw new TypeError('Unable to compute payment public key');
 
-            return Buffer.from(paymentPublicKey);
+            return paymentPublicKey;
         }
 
-        getPaymentAddress(a: Buffer, idx: number, type: AddressType = 'p2pkh'): string {
+        getPaymentAddress(a: Uint8Array, idx: number, type: AddressType = 'p2pkh'): string {
             const pubkey = this.derivePaymentPublicKey(a, idx);
 
             if (!pubkey)

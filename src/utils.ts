@@ -69,7 +69,7 @@ export function getP2pkhAddress(pubkey: Uint8Array, network: Network): string {
     return toBase58Check(hash160(pubkey), network.pubKeyHash);
 }
 
-export function getP2shAddress(pubkey: Buffer, network: Network) {
+export function getP2shAddress(pubkey: Uint8Array, network: Network) {
     const push20 = new Uint8Array([0, 0x14]);
     const hash = hash160(pubkey);
 
