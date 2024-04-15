@@ -15,8 +15,6 @@ All necessary documentation of usage is provided via test files.
 
 ### Using in browser
 
-You will need webpack/browserify to bundle this library and it's dependencies to be able to use it in browser
-environment.
 Since `tiny-secp256k1` is a WASM library, it will require such bundler to be able to load WASM code.
 Please consult the docs of a bundler that you use for further information.
 
@@ -28,7 +26,7 @@ For example current webpack will require you to set `{ experiments: { asyncWebAs
 
 ```js
 import * as ecc from 'tiny-secp256k1';
-import {BIP47Factory} from '@samouraiwallet/bip47';
+import {BIP47Factory, utils} from '@samouraiwallet/bip47';
 
 const bip47 = BIP47Factory(ecc);
 
@@ -36,7 +34,7 @@ const aliceB58PCode = 'PM8TJTLJbPRGxSbc8EJi42Wrr6QbNSaSSVJ5Y3E4pbCYiTHUskHg13935
 const bobSeed = '87eaaac5a539ab028df44d9110defbef3797ddb805ca309f61a69ff96dbaa7ab5b24038cf029edec5235d933110f0aea8aeecf939ed14fc20730bba71e4b1110';
 
 const alicePcode = bip47.fromBase58(aliceB58PCode);
-const bobPcode = bip47.fromSeed(Buffer.from(bobSeed, 'hex'), 0);
+const bobPcode = bip47.fromSeed(utils.hexToBytes(bobSeed), 0);
 
 const bobNotifPrivKey = bobPcode.getNotificationPrivateKey();
 

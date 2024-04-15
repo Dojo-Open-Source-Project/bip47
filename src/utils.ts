@@ -6,6 +6,8 @@ import {bech32} from 'bech32';
 
 import {Network} from './types';
 
+export {hexToBytes, bytesToHex} from '@noble/hashes/utils';
+
 export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     bitcoin: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',

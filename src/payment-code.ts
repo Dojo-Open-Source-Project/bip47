@@ -1,4 +1,4 @@
-import {BIP32Factory, BIP32Interface} from 'bip32';
+import {BIP32Factory, BIP32Interface} from '@samouraiwallet/bip32';
 import bs58check from 'bs58check';
 
 import * as utils from './utils.js';
@@ -27,7 +27,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
 
             this.buf = buf;
             this.network = network;
-            this.root = bip32.fromPublicKey(Buffer.from(this.pubKey), Buffer.from(this.chainCode), this.network);
+            this.root = bip32.fromPublicKey(this.pubKey, this.chainCode, this.network);
         }
 
         get features(): Uint8Array {
@@ -73,7 +73,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             return utils.getP2pkhAddress(child.publicKey, this.network);
         }
 
-        getNotificationPrivateKey(): Buffer {
+        getNotificationPrivateKey(): Uint8Array {
             if (!this._hasPrivKeys()) throw new Error('This payment code does not have private keys');
 
             const child = this.derive(0);
@@ -187,7 +187,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
     }
 
     const fromSeed = (bSeed: Uint8Array, id: number | string, network: Network = utils.networks.bitcoin): PaymentCode => {
-        const root = bip32.fromSeed(Buffer.from(bSeed));
+        const root = bip32.fromSeed(bSeed);
         const coinType = (network.pubKeyHash === utils.networks.bitcoin.pubKeyHash) ? '0' : '1';
         const root_bip47 = root.derivePath(`m/47'/${coinType}'/${id}'`);
 
