@@ -1,4 +1,4 @@
-import {TinySecp256k1Interface as TinySecp256k1InterfaceBIP32} from '@samouraiwallet/bip32';
+import type {TinySecp256k1Interface as TinySecp256k1InterfaceBIP32} from '@samouraiwallet/bip32';
 
 export type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
 

@@ -2,7 +2,7 @@
 
 A set of utilities for working with BIP47 and bitcoinjs-lib.
 
-This library uses ES Modules. Node.js v14 or later is required.
+This library uses ES Modules. Node.js v16 or later is required.
 
 Source code was written in Typescript. Type definitions are included in the published bundle.
 
@@ -20,13 +20,16 @@ Please consult the docs of a bundler that you use for further information.
 
 For example current webpack will require you to set `{ experiments: { asyncWebAssembly: true }}` in your config.
 
+There is also [@bitcoinerlab/secp256k1](https://github.com/bitcoinerlab/secp256k1) - a pure JS implementation which is fully compatible. 
+
 ## Examples
 
 ### Mainnet
 
 ```js
 import * as ecc from 'tiny-secp256k1';
-import {BIP47Factory, utils} from '@samouraiwallet/bip47';
+import BIP47Factory from '@samouraiwallet/bip47';
+import * as utils from '@samouraiwallet/bip47/utils';
 
 const bip47 = BIP47Factory(ecc);
 
@@ -46,7 +49,8 @@ const alicePaymentAddr2 = alicePcode.getPaymentAddress(bobNotifPrivKey, 1, 'p2wp
 
 ```js
 import * as ecc from 'tiny-secp256k1';
-import {BIP47Factory, utils} from '@samouraiwallet/bip47';
+import BIP47Factory from '@samouraiwallet/bip47';
+import * as utils from '@samouraiwallet/bip47/utils';
 
 const networks = utils.networks;
 

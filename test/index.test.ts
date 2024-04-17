@@ -1,9 +1,9 @@
 import {describe, it, assert} from 'vitest';
 import * as ecc from 'tiny-secp256k1';
-import {bytesToHex, hexToBytes} from '@noble/hashes/utils';
 
-import {BIP47Factory} from '../src';
-import {networks} from '../src/utils.js';
+/* eslint-disable-next-line import/no-named-as-default */
+import BIP47Factory from '../src/index.js';
+import {networks, bytesToHex, hexToBytes} from '../src/utils.js';
 
 
 /**

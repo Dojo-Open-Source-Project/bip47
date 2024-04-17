@@ -1,10 +1,9 @@
 import {BIP32Factory, BIP32Interface} from '@samouraiwallet/bip32';
-import bs58check from 'bs58check';
+import {bs58check} from '@samouraiwallet/bip32/crypto';
+import {sha256} from '@noble/hashes/sha256';
 
 import * as utils from './utils.js';
-import {Network, TinySecp256k1Interface, AddressType} from './types';
-
-const {encode, decode} = bs58check;
+import type {Network, TinySecp256k1Interface, AddressType} from './types.js';
 
 const PC_VERSION = 0x47 as const;
 
@@ -19,11 +18,11 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
 
         constructor(buf: Uint8Array, network: Network = utils.networks.bitcoin) {
             if (buf.length !== 80)
-                throw new TypeError('Invalid buffer length');
+                throw new Error('Invalid buffer length');
 
             this.version = buf.slice(0, 1);
             if (this.version[0] !== 1)
-                throw new TypeError('Only payment codes version 1 are supported');
+                throw new Error('Only payment codes version 1 are supported');
 
             this.buf = buf;
             this.network = network;
@@ -46,6 +45,11 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             return this.buf;
         }
 
+        clone(): PaymentCode {
+            /* eslint-disable-next-line unicorn/prefer-spread */
+            return new PaymentCode(new Uint8Array(this.buf.buffer.slice(0)), this.network);
+        }
+
         toBase58(): string {
             const version = new Uint8Array([PC_VERSION]);
             const buf = new Uint8Array(version.length + this.buf.length);
@@ -53,7 +57,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             buf.set(version);
             buf.set(this.buf, version.length);
 
-            return encode(buf);
+            return bs58check.encode(buf);
         }
 
         _hasPrivKeys(): boolean {
@@ -84,7 +88,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
 
         derivePaymentPrivateKey(A: Uint8Array, idx: number): Uint8Array {
             if (!ecc.isPoint(A))
-                throw new TypeError('Argument is not a valid public key');
+                throw new Error('Argument is not a valid public key');
 
             const b_node = this.derive(idx);
 
@@ -98,22 +102,22 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
                 throw new Error('Unable to compute resulting point');
 
             const Sx = S.slice(1, 33);
-            const s = utils.sha256(Sx);
+            const s = sha256(Sx);
 
             if (!ecc.isPrivate(s))
-                throw new TypeError('Invalid shared secret');
+                throw new Error('Invalid shared secret');
 
             const paymentPrivateKey = ecc.privateAdd(b, s);
 
             if (!paymentPrivateKey)
-                throw new TypeError('Unable to compute payment private key');
+                throw new Error('Unable to compute payment private key');
 
             return paymentPrivateKey;
         }
 
         derivePaymentPublicKey(a: Uint8Array, idx: number): Uint8Array {
             if (!ecc.isPrivate(a) && !ecc.isPoint(a))
-                throw new TypeError('Argument is neither a valid private key or public key');
+                throw new Error('Argument is neither a valid private key or public key');
 
             let B = null;
             let S = null;
@@ -139,16 +143,16 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             }
 
             if (!B || !ecc.isPoint(B))
-                throw new TypeError('Invalid derived public key');
+                throw new Error('Invalid derived public key');
 
             if (!S)
                 throw new Error('Unable to compute resulting point');
 
             const Sx = S.slice(1, 33);
-            const s = utils.sha256(Sx);
+            const s = sha256(Sx);
 
             if (!ecc.isPrivate(s))
-                throw new TypeError('Invalid shared secret');
+                throw new Error('Invalid shared secret');
 
             const EccPoint = ecc.pointFromScalar(s);
 
@@ -158,7 +162,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             const paymentPublicKey = ecc.pointAdd(B, EccPoint);
 
             if (!paymentPublicKey)
-                throw new TypeError('Unable to compute payment public key');
+                throw new Error('Unable to compute payment public key');
 
             return paymentPublicKey;
         }
@@ -167,7 +171,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
             const pubkey = this.derivePaymentPublicKey(a, idx);
 
             if (!pubkey)
-                throw new TypeError('Unable to derive public key');
+                throw new Error('Unable to derive public key');
 
             switch (type) {
                 case 'p2pkh': {
@@ -195,10 +199,10 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
 
         pc.set([1, 0]); // set version + options
 
-        if (root_bip47.publicKey.length !== 33) throw new TypeError('Missing or wrong publicKey');
+        if (root_bip47.publicKey.length !== 33) throw new Error('Missing or wrong publicKey');
         pc.set(root_bip47.publicKey, 2); // set public key
 
-        if (root_bip47.chainCode.length !== 32) throw new TypeError('Missing or wrong chainCode');
+        if (root_bip47.chainCode.length !== 32) throw new Error('Missing or wrong chainCode');
         pc.set(root_bip47.chainCode, 35);
 
         const pcode = new PaymentCode(pc, network);
@@ -207,11 +211,11 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
     };
 
     const fromBase58 = (inString: string, network?: Network): PaymentCode => {
-        const buf = decode(inString);
+        const buf = bs58check.decode(inString);
 
         const version = buf.slice(0, 1);
         if (version[0] !== PC_VERSION)
-            throw new TypeError('Invalid version');
+            throw new Error('Invalid version');
 
         return new PaymentCode(buf.slice(1), network);
     };

@@ -1,10 +1,7 @@
 /* eslint-disable unicorn/no-hex-escape, unicorn/number-literal-case */
-import {sha256 as noble_sha256} from '@noble/hashes/sha256';
-import {ripemd160 as noble_ripemd160} from '@noble/hashes/ripemd160';
-import bs58check from 'bs58check';
-import {bech32} from 'bech32';
+import {bech32, bs58check, hash160} from '@samouraiwallet/bip32/crypto';
 
-import {Network} from './types';
+import type {Network} from './types.js';
 
 export {hexToBytes, bytesToHex} from '@noble/hashes/utils';
 
@@ -45,18 +42,6 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
         wif: 0xef,
     }
 };
-
-export function ripemd160(buffer: Uint8Array): Uint8Array {
-    return noble_ripemd160(buffer);
-}
-
-export function sha256(buffer: Uint8Array): Uint8Array {
-    return noble_sha256(buffer);
-}
-
-export function hash160(buffer: Uint8Array): Uint8Array {
-    return ripemd160(sha256(buffer));
-}
 
 export function toBase58Check(hash: Uint8Array, version: number): string {
     const payload = new Uint8Array(21);

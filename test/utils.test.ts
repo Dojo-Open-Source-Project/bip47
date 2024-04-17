@@ -1,5 +1,4 @@
 import {describe, it, assert} from 'vitest';
-import {hexToBytes} from '@noble/hashes/utils';
 
 import * as utils from '../src/utils.js';
 
@@ -25,7 +24,7 @@ describe('utils', () => {
     describe('getP2pkhAddress()', () => {
         it('should provide correct P2PKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2pkhAddress(hexToBytes(pubkey), utils.networks.bitcoin);
+                const address = utils.getP2pkhAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2pkh);
             }
@@ -35,7 +34,7 @@ describe('utils', () => {
     describe('getP2shAddress()', () => {
         it('should provide correct P2SH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2shAddress(hexToBytes(pubkey), utils.networks.bitcoin);
+                const address = utils.getP2shAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2sh);
             }
@@ -45,7 +44,7 @@ describe('utils', () => {
     describe('getP2wpkhAddress()', () => {
         it('should provide correct P2PWKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2wpkhAddress(hexToBytes(pubkey), utils.networks.bitcoin);
+                const address = utils.getP2wpkhAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2wpkh);
             }
