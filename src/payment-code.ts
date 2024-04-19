@@ -309,7 +309,7 @@ export class PaymentCodePrivate extends PaymentCodePublic {
         const b_node = this.derive(idx);
 
         if (!b_node.privateKey)
-            throw new Error('Unable to derive node with private key');
+            throw new Error('Unable to derive node without private key');
 
         const b = b_node.privateKey;
         const S = this.ecc.pointMultiply(A, b);

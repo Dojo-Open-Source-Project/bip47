@@ -370,7 +370,7 @@ describe('payment-code', () => {
         });
     });
 
-    describe('PaymentCode.getMaskedPaymentCode()', () => {
+    describe('PaymentCode.getBlindedPaymentCode()', () => {
         const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
         const bobPcode = bip47.fromBase58(bob.pcBase58);
 
