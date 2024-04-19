@@ -43,7 +43,22 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     }
 };
 
-export function toBase58Check(hash: Uint8Array, version: number): string {
+export function xorUint8Arrays(a: Uint8Array, b: Uint8Array): Uint8Array {
+    if (a.length !== b.length) {
+        throw new Error('Uint8Arrays are not of the same length');
+    }
+
+    const result = new Uint8Array(a.length);
+
+    // eslint-disable-next-line unicorn/no-for-loop
+    for (let i = 0; i < a.length; i++) {
+        result[i] = a[i] ^ b[i];
+    }
+
+    return result;
+}
+
+function toBase58Check(hash: Uint8Array, version: number): string {
     const payload = new Uint8Array(21);
 
     payload.set([version], 0);

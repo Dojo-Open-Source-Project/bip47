@@ -2,15 +2,13 @@ import type {TinySecp256k1Interface as TinySecp256k1InterfaceBIP32} from '@samou
 
 export type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
 
-interface Bip32 {
-    public: number;
-    private: number;
-}
-
 export interface Network {
     messagePrefix: string;
     bech32: string;
-    bip32: Bip32;
+    bip32: {
+        public: number;
+        private: number;
+    };
     pubKeyHash: number;
     scriptHash: number;
     wif: number;
