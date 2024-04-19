@@ -34,8 +34,8 @@
     "docs": "typedoc src/*.ts",
     "build:clean": "rm -rf dist",
     "build:esm": "tsc -p tsconfig.build.json",
-    "build": "npm run build:clean && npm run build:esm",
-    "prepack": "npm run lint && npm run typescript && npm run test && npm run build"
+    "build": "pnpm run build:clean && pnpm run build:esm",
+    "prepack": "pnpm run lint && pnpm run typescript && pnpm run test && pnpm run build"
   },
   "repository": {
     "type": "git",
