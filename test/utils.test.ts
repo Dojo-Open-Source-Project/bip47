@@ -21,10 +21,29 @@ const PUBKEYS = new Map([
 ]);
 
 describe('utils', () => {
+    describe('xorUint8Arrays', () => {
+        it('should return a new Uint8Array which is the result of XOR operation of two Uint8Arrays', () => {
+            const array1 = new Uint8Array([1, 2, 3]);
+            const array2 = new Uint8Array([4, 5, 6]);
+            const expectedArray = new Uint8Array([5, 7, 5]);
+
+            const actualArray = utils.xorUint8Arrays(array1, array2);
+
+            assert.deepStrictEqual(actualArray, expectedArray);
+        });
+
+        it('should throw an error when arrays are not of the same length', () => {
+            const array1 = new Uint8Array([1, 2, 3]);
+            const array2 = new Uint8Array([4, 5]);
+
+            assert.throws(() => utils.xorUint8Arrays(array1, array2), 'Uint8Arrays are not of the same length');
+        });
+    });
+
     describe('getP2pkhAddress()', () => {
         it('should provide correct P2PKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2pkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
+                const address = utils.getP2pkhAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2pkh);
             }
@@ -34,7 +53,7 @@ describe('utils', () => {
     describe('getP2shAddress()', () => {
         it('should provide correct P2SH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2shAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
+                const address = utils.getP2shAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2sh);
             }
@@ -44,7 +63,7 @@ describe('utils', () => {
     describe('getP2wpkhAddress()', () => {
         it('should provide correct P2PWKH address for a pubkey', () => {
             for (const [pubkey, result] of PUBKEYS.entries()) {
-                const address = utils.getP2wpkhAddress(Buffer.from(pubkey, 'hex'), utils.networks.bitcoin);
+                const address = utils.getP2wpkhAddress(utils.hexToBytes(pubkey), utils.networks.bitcoin);
 
                 assert.strictEqual(address, result.p2wpkh);
             }

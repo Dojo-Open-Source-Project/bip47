@@ -113,6 +113,8 @@
     "unicorn/numeric-separators-style": "off",
     "unicorn/require-post-message-target-origin": "off",
     "unicorn/no-array-reduce": "off",
-    "unicorn/prefer-dom-node-dataset": "off"
+    "unicorn/prefer-dom-node-dataset": "off",
+    "unicorn/number-literal-case": "off",
+    "unicorn/prefer-spread": "off"
   }
 }

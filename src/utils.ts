@@ -1,10 +1,9 @@
 /* eslint-disable unicorn/no-hex-escape, unicorn/number-literal-case */
-import {sha256 as noble_sha256} from '@noble/hashes/sha256';
-import {ripemd160 as noble_ripemd160} from '@noble/hashes/ripemd160';
-import bs58check from 'bs58check';
-import {bech32} from 'bech32';
+import {bech32, bs58check, hash160} from '@samouraiwallet/bip32/crypto';
 
-import {Network} from './types';
+import type {Network} from './types.js';
+
+export {hexToBytes, bytesToHex} from '@noble/hashes/utils';
 
 export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     bitcoin: {
@@ -44,19 +43,22 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     }
 };
 
-export function ripemd160(buffer: Uint8Array): Uint8Array {
-    return noble_ripemd160(buffer);
+export function xorUint8Arrays(a: Uint8Array, b: Uint8Array): Uint8Array {
+    if (a.length !== b.length) {
+        throw new Error('Uint8Arrays are not of the same length');
+    }
+
+    const result = new Uint8Array(a.length);
+
+    // eslint-disable-next-line unicorn/no-for-loop
+    for (let i = 0; i < a.length; i++) {
+        result[i] = a[i] ^ b[i];
+    }
+
+    return result;
 }
 
-export function sha256(buffer: Uint8Array): Uint8Array {
-    return noble_sha256(buffer);
-}
-
-export function hash160(buffer: Uint8Array): Uint8Array {
-    return ripemd160(sha256(buffer));
-}
-
-export function toBase58Check(hash: Uint8Array, version: number): string {
+function toBase58Check(hash: Uint8Array, version: number): string {
     const payload = new Uint8Array(21);
 
     payload.set([version], 0);
@@ -69,7 +71,7 @@ export function getP2pkhAddress(pubkey: Uint8Array, network: Network): string {
     return toBase58Check(hash160(pubkey), network.pubKeyHash);
 }
 
-export function getP2shAddress(pubkey: Buffer, network: Network) {
+export function getP2shAddress(pubkey: Uint8Array, network: Network) {
     const push20 = new Uint8Array([0, 0x14]);
     const hash = hash160(pubkey);
 

@@ -1,24 +1,20 @@
-import {TinySecp256k1Interface as TinySecp256k1InterfaceBIP32} from 'bip32';
+import type {TinySecp256k1Interface as TinySecp256k1InterfaceBIP32} from '@samouraiwallet/bip32';
 
 export type AddressType = 'p2pkh' | 'p2sh' | 'p2wpkh'
-
-interface Bip32 {
-    public: number;
-    private: number;
-}
 
 export interface Network {
     messagePrefix: string;
     bech32: string;
-    bip32: Bip32;
+    bip32: {
+        public: number;
+        private: number;
+    };
     pubKeyHash: number;
     scriptHash: number;
     wif: number;
 }
 
 export interface TinySecp256k1Interface extends TinySecp256k1InterfaceBIP32 {
-    privateAdd(d: Uint8Array, tweak: Uint8Array): Uint8Array | null;
-
     pointMultiply(
         p: Uint8Array,
         tweak: Uint8Array,
