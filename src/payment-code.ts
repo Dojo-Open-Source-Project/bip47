@@ -123,72 +123,81 @@ export class PaymentCodePublic {
     }
 
     /**
-     * Derives a payment public key based on the given private key or public key.
-     * If the argument is a private key, it derives the public key and computes the shared secret using the specified index.
-     * If the argument is a public key, it computes the shared secret using the specified index and the private key stored in this instance.
-     * Throws an error if the argument is neither a valid private key nor a public key, or if any step in the derivation process fails.
      *
-     * @param {Uint8Array} a - The private key or public key to derive the payment public key from.
-     * @param {number} idx - The index used for derivation.
-     * @throws {Error} If the argument is neither a valid private key nor a public key, or if any step in the derivation process fails.
+     * @param {Uint8Array} B - public key
+     * @param {Uint8Array | null} S - secret point
      * @returns {Uint8Array} The derived payment public key.
      */
-    derivePaymentPublicKey(a: Uint8Array, idx: number): Uint8Array {
-        if (!this.ecc.isPrivate(a) && !this.ecc.isPoint(a))
-            throw new Error('Argument is neither a valid private key or public key');
+    protected derivePublicKeyFromSharedSecret(B: Uint8Array, S: Uint8Array | null): Uint8Array {
+        if (!this.ecc.isPoint(B)) throw new Error('Invalid derived public key');
 
-        let B = null;
-        let S = null;
-
-        if (this.ecc.isPrivate(a)) {
-            // a is a private key
-            B = this.derive(idx).publicKey;
-            S = this.ecc.pointMultiply(B, a);
-
-        } else if (this.ecc.isPoint(a)) {
-            if (!this.hasPrivKeys)
-                throw new Error('Unable to compute the derivation with a public key provided as argument');
-            // a is a public key
-            const A = a;
-            const b_node = this.derive(idx);
-
-            if (!b_node.privateKey)
-                throw new Error('Unable to derive node with private key');
-
-            const b = b_node.privateKey;
-            B = b_node.publicKey;
-            S = this.ecc.pointMultiply(A, b);
-        }
-
-        if (!B || !this.ecc.isPoint(B))
-            throw new Error('Invalid derived public key');
-
-        if (!S)
-            throw new Error('Unable to compute resulting point');
+        if (!S) throw new Error('Unable to compute secret point');
 
         const Sx = S.subarray(1, 33);
         const s = sha256(Sx);
 
-        if (!this.ecc.isPrivate(s))
-            throw new Error('Invalid shared secret');
+        if (!this.ecc.isPrivate(s)) throw new Error('Invalid shared secret');
 
         const EccPoint = this.ecc.pointFromScalar(s);
 
-        if (!EccPoint)
-            throw new Error('Unable to compute point');
+        if (!EccPoint) throw new Error('Unable to compute point');
 
         const paymentPublicKey = this.ecc.pointAdd(B, EccPoint);
 
-        if (!paymentPublicKey)
-            throw new Error('Unable to compute payment public key');
+        if (!paymentPublicKey) throw new Error('Unable to compute payment public key');
 
         return paymentPublicKey;
     }
 
     /**
+     * Derives a payment public key based on the given private payment code.
+     *
+     * @param {PaymentCodePrivate} paymentCode - The private payment code to derive the payment public key from.
+     * @param {number} idx - The index used for derivation.
+     * @throws {Error} If the payment code does not contain a valid private key, or if any step in the derivation process fails.
+     * @returns {Uint8Array} The derived payment public key.
+     */
+    derivePaymentPublicKey(paymentCode: PaymentCodePrivate, idx: number): Uint8Array {
+        const a: Uint8Array = paymentCode.getNotificationPrivateKey();
+
+        if (!this.ecc.isPrivate(a)) throw new Error('Received invalid private key');
+
+        const B = this.derive(idx).publicKey;
+        const S = this.ecc.pointMultiply(B, a);
+
+        return this.derivePublicKeyFromSharedSecret(B, S);
+    }
+
+    /**
+     * Retrieves the address from a given public key.
+     *
+     * @param {Uint8Array} pubKey - The public key.
+     * @param {AddressType} type - The type of address. Expected values: "p2pkh", "p2sh", "p2wpkh".
+     * @throws {Error} - When unsupported address type is passed
+     * @returns {string} The generated address.
+     * @protected
+     */
+    protected getAddressFromPubkey(pubKey: Uint8Array, type: AddressType): string {
+        switch (type) {
+            case 'p2pkh': {
+                return utils.getP2pkhAddress(pubKey, this.network);
+            }
+            case 'p2sh': {
+                return utils.getP2shAddress(pubKey, this.network);
+            }
+            case 'p2wpkh': {
+                return utils.getP2wpkhAddress(pubKey, this.network);
+            }
+            default: {
+                throw new Error(`Unknown address type. Expected: p2pkh | p2sh | p2wpkh, got ${type}`);
+            }
+        }
+    }
+
+    /**
      * Retrieves a payment address based on the provided parameters.
      *
-     * @param {Uint8Array} a - The data used to derive the public key.
+     * @param {PaymentCodePrivate} paymentCode - The private payment code to derive the payment address from.
      * @param {number} idx - The index used in the derivation process.
      * @param {AddressType} [type='p2pkh'] - The type of address to generate.
      *                                      Valid options: 'p2pkh', 'p2sh', 'p2wpkh'.
@@ -198,23 +207,10 @@ export class PaymentCodePublic {
      *                   if an unknown address type is specified.
      * @return {string} - The generated payment address.
      */
-    getPaymentAddress(a: Uint8Array, idx: number, type: AddressType = 'p2pkh'): string {
-        const pubkey = this.derivePaymentPublicKey(a, idx);
+    getPaymentAddress(paymentCode: PaymentCodePrivate, idx: number, type: AddressType = 'p2pkh'): string {
+        const pubKey = this.derivePaymentPublicKey(paymentCode, idx);
 
-        switch (type) {
-            case 'p2pkh': {
-                return utils.getP2pkhAddress(pubkey, this.network);
-            }
-            case 'p2sh': {
-                return utils.getP2shAddress(pubkey, this.network);
-            }
-            case 'p2wpkh': {
-                return utils.getP2wpkhAddress(pubkey, this.network);
-            }
-            default: {
-                throw new Error(`Unknown address type. Expected: p2pkh | p2sh | p2wpkh, got ${type}`);
-            }
-        }
+        return this.getAddressFromPubkey(pubKey, type);
     }
 
     /**
@@ -285,15 +281,59 @@ export class PaymentCodePrivate extends PaymentCodePublic {
      * @param {number} index - The index of the hardened child.
      * @return {BIP32Interface} - The hardened child BIP32 node.
      */
+
     /* v8 ignore next 3 */
     deriveHardened(index: number): BIP32Interface {
         return this.root.deriveHardened(index);
     }
 
     /**
+     * Derives a payment public key based on the given public payment code.
+     *
+     * @param {PaymentCodePublic} paymentCode - The public payment code to derive the payment public key from.
+     * @param {number} idx - The index used for derivation.
+     * @throws {Error} If the payment code does not contain a valid public key, or if any step in the derivation process fails.
+     * @returns {Uint8Array} The derived payment public key.
+     */
+    derivePaymentPublicKey(paymentCode: PaymentCodePublic, idx: number): Uint8Array {
+        const A: Uint8Array = paymentCode.getNotificationPublicKey();
+
+        if (!this.ecc.isPoint(A)) throw new Error('Received invalid public key');
+
+        const b_node = this.derive(idx);
+
+        if (!b_node.privateKey) throw new Error('Unable to derive node with private key');
+
+        const b = b_node.privateKey;
+        const B = b_node.publicKey;
+        const S = this.ecc.pointMultiply(A, b);
+
+        return this.derivePublicKeyFromSharedSecret(B, S);
+    }
+
+    /**
+     * Retrieves a payment address based on the provided parameters.
+     *
+     * @param {PaymentCodePublic} paymentCode - The public payment code to derive the payment address from.
+     * @param {number} idx - The index used in the derivation process.
+     * @param {AddressType} [type='p2pkh'] - The type of address to generate.
+     *                                      Valid options: 'p2pkh', 'p2sh', 'p2wpkh'.
+     *                                      Defaults to 'p2pkh' if not provided.
+     *
+     * @throws {Error} - If unable to derive public key or
+     *                   if an unknown address type is specified.
+     * @return {string} - The generated payment address.
+     */
+    getPaymentAddress(paymentCode: PaymentCodePublic, idx: number, type: AddressType = 'p2pkh'): string {
+        const pubKey = this.derivePaymentPublicKey(paymentCode, idx);
+
+        return this.getAddressFromPubkey(pubKey, type);
+    }
+
+    /**
      * Derives the payment private key from a given public key and index.
      *
-     * @param {Uint8Array} A - The public key.
+     * @param {PaymentCodePublic} paymentCodePublic - Public payment code
      * @param {number} idx - The index.
      * @throws {Error} Argument is not a valid public key.
      * @throws {Error} Unable to derive node with private key.
@@ -302,7 +342,9 @@ export class PaymentCodePrivate extends PaymentCodePublic {
      * @throws {Error} Unable to compute payment private key.
      * @returns {Uint8Array} - The derived payment private key.
      */
-    derivePaymentPrivateKey(A: Uint8Array, idx: number): Uint8Array {
+    derivePaymentPrivateKey(paymentCodePublic: PaymentCodePublic, idx: number): Uint8Array {
+        const A = paymentCodePublic.getNotificationPublicKey();
+
         if (!this.ecc.isPoint(A))
             throw new Error('Argument is not a valid public key');
 

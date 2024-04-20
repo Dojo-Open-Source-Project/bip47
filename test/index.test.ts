@@ -4,7 +4,7 @@ import * as ecc from 'tiny-secp256k1';
 import {bs58check} from '@samouraiwallet/bip32/crypto';
 import {BIP47Factory} from '../src/index.js';
 import {networks, bytesToHex, hexToBytes} from '../src/utils.js';
-import {PaymentCodePublic} from '../src/payment-code.js';
+import {PaymentCodePublic, PaymentCodePrivate} from '../src/payment-code.js';
 
 /**
  * Test vectors
@@ -99,19 +99,18 @@ const ALICE_BLINDED_PCODE = '010002063e4eb95e62791b06c50e1a3a942e1ecaaa9afbbeb32
 
 const bip47 = BIP47Factory(ecc);
 
-describe('payment-code', () => {
-
-    describe('PaymentCode.fromBase58()', () => {
+describe('bip47', () => {
+    describe('fromBase58()', () => {
         it('should successfully initialize a PaymentCode from a base58 payment code', () => {
             assert.doesNotThrow(() => {
                 bip47.fromBase58(alice.pcBase58);
             });
-        });
-        it('should reject a version 2 payment code', () => {
-            assert.throws(() => {
-                const buf = hexToBytes(version2Pcode.pc);
-                bip47.fromBuffer(buf);
-            });
+
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            assert.instanceOf(alicePcode, PaymentCodePublic);
+            assert.strictEqual(bytesToHex(alicePcode.paymentCode), alice.pc);
+            assert.strictEqual(bytesToHex(alicePcode.getNotificationPublicKey()), alice.notifPubKey);
+            assert.strictEqual(alicePcode.getNotificationAddress(), alice.notifAddr);
         });
         it('should fail to initialize a PaymentCode with an invalid version', () => {
             assert.throws(() => {
@@ -120,7 +119,7 @@ describe('payment-code', () => {
         });
     });
 
-    describe('PaymentCode.fromSeed()', () => {
+    describe('fromSeed()', () => {
         it('should successfully initialize a PaymentCode from a seed', () => {
             const seed = hexToBytes(bob.seed);
             const pc = bip47.fromSeed(seed);
@@ -138,24 +137,33 @@ describe('payment-code', () => {
         });
     });
 
-    describe('PaymentCode.fromBuffer()', () => {
+    describe('fromBuffer()', () => {
         it('should successfully initialize a PaymentCode from public key', () => {
             const seed = hexToBytes(alice.pc);
             const pc = bip47.fromBuffer(seed, networks.bitcoin);
             const pc_b58 = pc.toBase58();
             assert.strictEqual(pc_b58, alice.pcBase58);
         });
+
+        it('should reject a version 2 payment code', () => {
+            assert.throws(() => {
+                const buf = hexToBytes(version2Pcode.pc);
+                bip47.fromBuffer(buf);
+            });
+        });
     });
+});
 
-    describe('PaymentCode.toBase58()', () => {
+describe('PaymentCode', () => {
+    describe('PaymentCodePublic.toBase58()', () => {
         it('should successfully reencode a payment code in base58', () => {
-            const pc1 = bip47.fromBase58(alice.pcBase58);
-            const pc1_b58 = pc1.toBase58();
-            assert.strictEqual(pc1_b58, alice.pcBase58);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const alice_b58 = alicePcode.toBase58();
+            assert.strictEqual(alice_b58, alice.pcBase58);
 
-            const pc2 = bip47.fromBase58(bob.pcBase58);
-            const pc2_b58 = pc2.toBase58();
-            assert.strictEqual(pc2_b58, bob.pcBase58);
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
+            const bob_b58 = bobPcode.toBase58();
+            assert.strictEqual(bob_b58, bob.pcBase58);
         });
     });
 
@@ -175,26 +183,28 @@ describe('payment-code', () => {
 
     describe('PaymentCodePublic.clone()', () => {
         it('should successfully clone a public payment code', () => {
-            const pc = bip47.fromBase58(alice.pcBase58);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
 
-            const pc2 = pc.clone();
+            const alicePcodeClone = alicePcode.clone();
 
-            assert.notEqual(pc2, pc);
-            assert.notEqual(pc2.paymentCode.buffer, pc.paymentCode.buffer);
-            assert.deepStrictEqual(pc2.paymentCode, pc.paymentCode);
+            assert.instanceOf(alicePcodeClone, PaymentCodePublic);
+            assert.notEqual(alicePcodeClone, alicePcode);
+            assert.notEqual(alicePcodeClone.paymentCode.buffer, alicePcode.paymentCode.buffer);
+            assert.deepStrictEqual(alicePcodeClone.paymentCode, alicePcode.paymentCode);
         });
     });
 
     describe('PaymentCodePrivate.clone()', () => {
         it('should successfully clone a private payment code', () => {
-            const pc = bip47.fromSeed(hexToBytes(alice.seed));
+            const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
 
-            const pc2 = pc.clone();
+            const alicePcodeClone = alicePcode.clone();
 
-            assert.notEqual(pc2, pc);
-            assert.notEqual(pc2.paymentCode.buffer, pc.paymentCode.buffer);
-            assert.deepStrictEqual(pc2.paymentCode, pc.paymentCode);
-            assert.deepStrictEqual(pc2.root.privateKey, pc.root.privateKey);
+            assert.instanceOf(alicePcodeClone, PaymentCodePrivate);
+            assert.notEqual(alicePcodeClone, alicePcode);
+            assert.notEqual(alicePcodeClone.paymentCode.buffer, alicePcode.paymentCode.buffer);
+            assert.deepStrictEqual(alicePcodeClone.paymentCode, alicePcode.paymentCode);
+            assert.deepStrictEqual(alicePcodeClone.root.privateKey, alicePcode.root.privateKey);
         });
     });
 
@@ -211,22 +221,21 @@ describe('payment-code', () => {
 
     describe('PaymentCode.getNotificationAddress()', () => {
         it('should successfully derive notification addresses', () => {
-            const pc1 = bip47.fromBase58(alice.pcBase58);
-            const notifAddr1 = pc1.getNotificationAddress();
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const notifAddr1 = alicePcode.getNotificationAddress();
             assert.strictEqual(notifAddr1, alice.notifAddr);
 
-            const pc2 = bip47.fromBase58(bob.pcBase58);
-            const notifAddr2 = pc2.getNotificationAddress();
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
+            const notifAddr2 = bobPcode.getNotificationAddress();
             assert.strictEqual(notifAddr2, bob.notifAddr);
         });
     });
 
-    describe('PaymentCode.getNotificationPrivateKey()', () => {
+    describe('PaymentCodePrivate.getNotificationPrivateKey()', () => {
         it('should successfully get private key associated with notification address', () => {
-            const seed = hexToBytes(bob.seed);
-            const pc = bip47.fromSeed(seed);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
 
-            const privKey = bytesToHex(pc.getNotificationPrivateKey());
+            const privKey = bytesToHex(bobPcode.getNotificationPrivateKey());
 
             assert.strictEqual(privKey, bob.notifPrivkey);
         });
@@ -234,43 +243,32 @@ describe('payment-code', () => {
 
     describe('PaymentCode.derivePaymentPublicKey()', () => {
         it('should successfully derive public keys from a payment code and a notif privkey', () => {
-            const privkey1 = hexToBytes(alice.notifPrivkey);
-            const pc2 = bip47.fromBase58(bob.pcBase58);
+            const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
 
-            const pubkeyPayment = pc2.derivePaymentPublicKey(privkey1, 0);
+            const pubkeyPayment = bobPcode.derivePaymentPublicKey(alicePcode, 0);
 
             assert.strictEqual(bytesToHex(pubkeyPayment), aliceToBobAddresses[0].pubkey);
         });
 
         it('should successfully derive public keys from a payment code and a notif pubkey', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
 
-            const pubkeyPayment = pc2.derivePaymentPublicKey(pubkey1, 0);
+            const pubkeyPayment = bobPcode.derivePaymentPublicKey(alicePcode, 0);
 
             assert.strictEqual(bytesToHex(pubkeyPayment), aliceToBobAddresses[0].pubkey);
-        });
-
-        it('should fail to derive public keys from a notif pubkey if master privkey is unknown', () => {
-            assert.throws(() => {
-                const pubkey1 = hexToBytes(alice.notifPubKey);
-                const pc2 = bip47.fromBase58(bob.pcBase58);
-
-                pc2.derivePaymentPublicKey(pubkey1, 0);
-            });
         });
     });
 
     describe('PaymentCode.derivePaymentPrivateKey()', () => {
         it('should successfully derive private keys from a payment code and a notif pubkey', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
             for (let i = 0; i < 10; i++) {
-                const privkeyPayment = pc2.derivePaymentPrivateKey(pubkey1, i);
+                const privkeyPayment = bobPcode.derivePaymentPrivateKey(alicePcode, i);
                 const strPubkeyPayment = (ecc.pointFromScalar(privkeyPayment) ?? '').toString();
-                const strPubkeyPayment2 = pc2.derivePaymentPublicKey(pubkey1, i).toString();
+                const strPubkeyPayment2 = bobPcode.derivePaymentPublicKey(alicePcode, i).toString();
                 assert.strictEqual(strPubkeyPayment, strPubkeyPayment2);
             }
         });
@@ -278,80 +276,76 @@ describe('payment-code', () => {
 
     describe('PaymentCode.getPaymentAddress()', () => {
         it('should successfully derive P2PKH addresses from a payment code and a notif privkey', () => {
-            const privkey1 = hexToBytes(alice.notifPrivkey);
-            const pc2 = bip47.fromBase58(bob.pcBase58);
+            const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2pkh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2pkh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2pkh);
             }
         });
 
         it('should successfully derive P2PKH addresses from a payment code and a notif pubkey', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2pkh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2pkh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2pkh);
             }
         });
 
         it('should successfully derive P2SH addresses from a payment code and a notif privkey', () => {
-            const privkey1 = hexToBytes(alice.notifPrivkey);
-            const pc2 = bip47.fromBase58(bob.pcBase58);
+            const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2sh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2sh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2sh);
             }
         });
 
         it('should successfully derive P2SH addresses from a payment code and a notif pubkey', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2sh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2sh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2sh);
             }
         });
 
         it('should successfully derive P2WPKH addresses from a payment code and a notif privkey', () => {
-            const privkey1 = hexToBytes(alice.notifPrivkey);
-            const pc2 = bip47.fromBase58(bob.pcBase58);
+            const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
+            const bobPcode = bip47.fromBase58(bob.pcBase58);
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(privkey1, i, 'p2wpkh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2wpkh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2wpkh);
             }
         });
 
         it('should successfully derive P2WPKH addresses from a payment code and a notif pubkey', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
             for (let i = 0; i < 10; i++) {
-                const addrPayment = pc2.getPaymentAddress(pubkey1, i, 'p2wpkh');
+                const addrPayment = bobPcode.getPaymentAddress(alicePcode, i, 'p2wpkh');
 
                 assert.strictEqual(addrPayment, aliceToBobAddresses[i].p2wpkh);
             }
         });
 
         it('should should throw an error for invalid address type', () => {
-            const pubkey1 = hexToBytes(alice.notifPubKey);
-            const seed = hexToBytes(bob.seed);
-            const pc2 = bip47.fromSeed(seed);
+            const alicePcode = bip47.fromBase58(alice.pcBase58);
+            const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
             for (let i = 0; i < 10; i++) {
                 // @ts-expect-error expect this beceuse we need to test this case
-                assert.throws(() => pc2.getPaymentAddress(pubkey1, i, 'p2tr'), 'Unknown address type');
+                assert.throws(() => bobPcode.getPaymentAddress(alicePcode, i, 'p2tr'), 'Unknown address type');
             }
         });
     });
 
-    describe('PaymentCode.getPaymentCodeFromNotificationTransactionData()', () => {
+    describe('PaymentCodePrivate.getPaymentCodeFromNotificationTransactionData()', () => {
         const bobPcode = bip47.fromSeed(hexToBytes(bob.seed));
 
         it('should successfully get Alice payment code from a notification transaction data', () => {
@@ -370,7 +364,7 @@ describe('payment-code', () => {
         });
     });
 
-    describe('PaymentCode.getBlindedPaymentCode()', () => {
+    describe('PaymentCodePublic.getBlindedPaymentCode()', () => {
         const alicePcode = bip47.fromSeed(hexToBytes(alice.seed));
         const bobPcode = bip47.fromBase58(bob.pcBase58);
 
