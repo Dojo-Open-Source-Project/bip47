@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.0
+### Breaking major release
+- full browser compatibility (no use of Node.js internals)
+- switched to @samouraiwallet/bip32
+- more tests
+- more straightforward API
+- added methods to create notification payload and extract payment code from payload
+- added more comprehensive usage examples
+
 ## v0.8.0
 ### Breaking
 - minimum required Node.js version is now v16.6.0
