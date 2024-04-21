@@ -58,8 +58,8 @@ Supported libraries:
 ### Examples
 
 - [Create an instance of bip47](#create-an-instance-of-bip47)
-- [Create a PaymetCodePrivate instance from wallet master seed](#create-a-paymetcodeprivate-instance-from-wallet-master-seed)
-- [Create a PaymetCodePublic instance from payment code string](#create-a-paymetcodepublic-instance-from-payment-code-string)
+- [Create a PaymentCodePrivate instance from wallet master seed](#create-a-paymentcodeprivate-instance-from-wallet-master-seed)
+- [Create a PaymentCodePublic instance from payment code string](#create-a-paymentcodepublic-instance-from-payment-code-string)
 - [Generate a base58 encoded payment code](#generate-a-base58-encoded-payment-code)
 - [Get notification address](#get-notification-address)
 - [Get notification address public key](#get-notification-address-public-key)
@@ -77,7 +77,7 @@ import * as ecc from "tiny-secp256k1";
 const bip47 = BIP47Factory(ecc);
 ```
 
-#### Create a PaymetCodePrivate instance from wallet master seed
+#### Create a PaymentCodePrivate instance from wallet master seed
 
 **on mainnet**
 ```ts
@@ -104,7 +104,7 @@ const alice: PaymentCodePrivate = bip47.fromSeed(walletSeed, false, networks['te
 const alice2: PaymentCodePrivate = bip47.fromSeed(walletSeed, true, networks['testnet']);
 ```
 
-#### Create a PaymetCodePublic instance from payment code string
+#### Create a PaymentCodePublic instance from payment code string
 
 **on mainnet**
 ```ts
