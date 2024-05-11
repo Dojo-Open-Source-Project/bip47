@@ -39,7 +39,7 @@ mkdir bip47-docs
 cd bip47-docs
 
 # download and extract docs directory
-curl -fsSL https://code.samourai.io/dojo/bip47-js/-/archive/master/bip47-js-master.tar.gz\?path\=docs | tar -xzv --strip-components=2
+curl -fsSL https://github.com/Dojo-Open-Source-Project/bip47/archive/refs/heads/master.tar.gz\?path\=docs | tar -xzv --strip-components=2
 
 # run simple HTTP file server
 npx serve .

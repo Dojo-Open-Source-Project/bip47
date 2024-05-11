@@ -39,14 +39,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://code.samourai.io/dojo/bip47-js.git"
+    "url": "https://github.com/Dojo-Open-Source-Project/bip47.git"
   },
   "bugs": {
-    "url": "https://code.samourai.io/dojo/bip47-js/-/issues"
+    "url": "https://github.com/Dojo-Open-Source-Project/bip47/issues"
   },
   "author": "Katana Cryptographic Ltd.",
   "license": "LGPL-3.0",
-  "homepage": "https://code.samourai.io/dojo/bip47-js",
+  "homepage": "https://github.com/Dojo-Open-Source-Project/bip47",
   "dependencies": {
     "@noble/hashes": "1.4.0",
     "@samouraiwallet/bip32": "5.1.0"
