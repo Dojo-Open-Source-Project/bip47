@@ -1,6 +1,5 @@
-import {BIP32API, BIP32Factory, BIP32Interface} from '@samouraiwallet/bip32';
-import {bs58check, hmacSHA512} from '@samouraiwallet/bip32/crypto';
-import {sha256} from '@noble/hashes/sha256';
+import {BIP32API, BIP32Factory, BIP32Interface} from 'bip32';
+import {sha256} from '@noble/hashes/sha2';
 
 import * as utils from './utils.js';
 import type {Network, TinySecp256k1Interface, AddressType} from './types.js';
@@ -94,7 +93,7 @@ export class PaymentCodePublic {
         buf.set(version);
         buf.set(this.buf, version.length);
 
-        return bs58check.encode(buf);
+        return utils.bs58check.encode(buf);
     }
 
     /**
@@ -232,7 +231,7 @@ export class PaymentCodePublic {
 
         const x: Uint8Array = S.subarray(1, 33);
         const o: Uint8Array = outpoint;
-        const s: Uint8Array = hmacSHA512(o, x);
+        const s: Uint8Array = utils.hmacSHA512(o, x);
 
         const paymentCodeBuffer: Uint8Array = this.paymentCode;
 
@@ -404,7 +403,7 @@ export class PaymentCodePrivate extends PaymentCodePublic {
         if (!S) throw new Error('Unable to compute secret point');
 
         const x: Uint8Array = S.subarray(1, 33);
-        const s: Uint8Array = hmacSHA512(outpoint, x);
+        const s: Uint8Array = utils.hmacSHA512(outpoint, x);
 
         const blindedPaymentCode: Uint8Array = scriptPubKey.subarray(3);
 
@@ -464,7 +463,7 @@ export const BIP47Factory = (ecc: TinySecp256k1Interface) => {
      * @returns {PaymentCodePublic}
      */
     const fromBase58 = (inString: string, network?: Network): PaymentCodePublic => {
-        const buf = bs58check.decode(inString);
+        const buf = utils.bs58check.decode(inString);
 
         const version = buf[0];
         if (version !== PC_VERSION)
