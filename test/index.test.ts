@@ -1,9 +1,8 @@
 /* eslint-disable max-len */
 import {describe, it, assert} from 'vitest';
 import * as ecc from 'tiny-secp256k1';
-import {bs58check} from '@samouraiwallet/bip32/crypto';
 import {BIP47Factory} from '../src/index.js';
-import {networks, bytesToHex, hexToBytes} from '../src/utils.js';
+import {networks, bytesToHex, hexToBytes, bs58check} from '../src/utils.js';
 import {PaymentCodePublic, PaymentCodePrivate} from '../src/payment-code.js';
 
 /**
