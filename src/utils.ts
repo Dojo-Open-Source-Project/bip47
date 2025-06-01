@@ -1,5 +1,8 @@
 /* eslint-disable unicorn/no-hex-escape, unicorn/number-literal-case */
-import {bech32, bs58check, hash160} from '@samouraiwallet/bip32/crypto';
+import {createBase58check, bech32} from '@scure/base';
+import {sha256, sha512} from '@noble/hashes/sha2';
+import {ripemd160} from '@noble/hashes/legacy';
+import {hmac} from '@noble/hashes/hmac';
 
 import type {Network} from './types.js';
 
@@ -43,6 +46,16 @@ export const networks: Record<'bitcoin' | 'regtest' | 'testnet', Network> = {
     }
 };
 
+export const bs58check = createBase58check(sha256);
+
+export function hmacSHA512(key: Uint8Array, data: Uint8Array): Uint8Array {
+    return hmac(sha512, key, data);
+}
+
+export function hash160(buffer: Uint8Array): Uint8Array {
+    return ripemd160(sha256(buffer));
+}
+
 export function xorUint8Arrays(a: Uint8Array, b: Uint8Array): Uint8Array {
     if (a.length !== b.length) {
         throw new Error('Uint8Arrays are not of the same length');
@@ -71,7 +84,7 @@ export function getP2pkhAddress(pubkey: Uint8Array, network: Network): string {
     return toBase58Check(hash160(pubkey), network.pubKeyHash);
 }
 
-export function getP2shAddress(pubkey: Uint8Array, network: Network) {
+export function getP2shAddress(pubkey: Uint8Array, network: Network): string {
     const push20 = new Uint8Array([0, 0x14]);
     const hash = hash160(pubkey);
 

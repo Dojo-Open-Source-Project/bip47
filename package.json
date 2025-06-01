@@ -1,8 +1,8 @@
 {
   "name": "@samouraiwallet/bip47",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "engines": {
-    "node": ">=16.6.0"
+    "node": ">=18.14.0"
   },
   "description": "A set of utilities for working with BIP47 and bitcoinjs-lib",
   "keywords": [
@@ -39,30 +39,31 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://code.samourai.io/dojo/bip47-js.git"
+    "url": "https://github.com/Dojo-Open-Source-Project/bip47.git"
   },
   "bugs": {
-    "url": "https://code.samourai.io/dojo/bip47-js/-/issues"
+    "url": "https://github.com/Dojo-Open-Source-Project/bip47/issues"
   },
   "author": "Katana Cryptographic Ltd.",
   "license": "LGPL-3.0",
-  "homepage": "https://code.samourai.io/dojo/bip47-js",
+  "homepage": "https://github.com/Dojo-Open-Source-Project/bip47",
   "dependencies": {
-    "@noble/hashes": "1.4.0",
-    "@samouraiwallet/bip32": "5.1.0"
+    "@noble/hashes": "1.8.0",
+    "@scure/base": "^1.2.6",
+    "bip32": "5.0.0-rc.0"
   },
   "devDependencies": {
-    "@types/node": "^18.19.31",
+    "@types/node": "^18.19.110",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
-    "@vitest/coverage-v8": "^1.5.0",
+    "@vitest/coverage-v8": "^3.1.4",
     "eslint": "^8.57.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-unicorn": "^52.0.0",
     "tiny-secp256k1": "^2.2.3",
-    "typedoc": "^0.25.13",
+    "typedoc": "^0.28.5",
     "typescript": "^5.4.5",
-    "vitest": "^1.5.0"
+    "vitest": "^3.1.4"
   }
 }

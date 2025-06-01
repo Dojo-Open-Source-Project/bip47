@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.0
+- updated dependencies
+- switched to bip32@5.0.0-rc.0
+- minimum required Node.js version is now v18.14.0
+
 ## v1.0.0
 ### Breaking major release
 - full browser compatibility (no use of Node.js internals)
