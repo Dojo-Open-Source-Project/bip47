@@ -7,6 +7,7 @@ docs/
 .gitignore
 .eslintrc.json
 vitest.config.ts
+pnpm-workspace.yaml
 
 *.map
 
