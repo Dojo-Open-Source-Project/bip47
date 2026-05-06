@@ -1,3 +1,9 @@
+# Archived
+
+This project has been moved to [dojo-tools repository](https://github.com/Dojo-Open-Source-Project/dojo-tools/tree/master/packages/bip47).
+
+--- 
+
 # @samouraiwallet/bip47
 
 A set of utilities for working with BIP47 and bitcoinjs-lib.
